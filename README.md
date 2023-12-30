@@ -1,31 +1,40 @@
-# Node.js Hello World
+# Toptal REST series
 
-Simple Node.js + Vercel example that returns a "Hello World" response.
+A project made for the free _Building a Node.js/TypeScript REST API_ series at the Toptal Engineering Blog.
 
-## How to Use
+This branch contains some setup for linting and prettifying code that is outside the scope of the series.
 
-You can choose from one of the following two methods to use this repository:
+In addition to the inclusion of `.eslintrc.json` and `.prettierrc` files, some development dependencies were added to `package.json`, namely `@typescript-eslint/eslint-plugin eslint-plugin-mocha eslint-plugin-prettier eslint-config-prettier`.
 
-### One-Click Deploy
+You likely have to `npm i -g prettier` as well.
 
-Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=vercel-examples):
+From here (after running `npm i`) there are two things you can do.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/git/external?repository-url=https://github.com/vercel/examples/tree/main/solutions/node-hello-world&project-name=node-hello-world&repository-name=node-hello-world)
+## One-time Prettification
 
-### Clone and Deploy
+For this, you can go to the project root, and run:
 
-```bash
-git clone https://github.com/vercel/examples/tree/main/solutions/node-hello-world
+``` sh
+find . -name '*.js' -or -name '*.ts' | grep -v .history | grep -v dist | grep -v node_modules | xargs prettier --write --single-quote
 ```
 
-Install the Vercel CLI:
+## Continuous Prettification and Linting
 
-```bash
-npm i -g vercel
+In this scenario, whenever you save a file in VSCode (or VSCodium) that you were working on, it automatically runs Prettier and ESLint on it.
+
+To set it up, find your `settings.json` file (e.g., `~/.config/VSCodium/User/settings.json`) and add these lines to it:
+
+``` json
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  }
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "eslint.validate": ["typescript", "javascript"]
 ```
 
-Then run the app at the root of the repository:
+With that, try making some changes to the project, like adding a line `const neverused    =1;`.  If all went well, Prettier will reformat your code for you, and ESLint will generate warnings in the Problems pane about the unused variable `neverused`.
 
-```bash
-vercel dev
-```
+* * *
+
+Visit https://www.toptal.com/blog and subscribe to our newsletter to read great articles!
