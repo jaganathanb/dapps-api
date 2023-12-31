@@ -13,6 +13,7 @@ import { ApiError } from '@common/utils/api-error';
 import { authLimiter, errorConverter, errorHandler } from '@common/middleware';
 
 import userRoutes from './users/users.routes';
+import docRoutes from './docs/docs.routes';
 
 const app: express.Application = express();
 
@@ -69,7 +70,7 @@ if (config.env === 'production') {
 }
 
 // v1 api routes
-app.use('/api/v1', userRoutes);
+app.use('/api/v1', [userRoutes, docRoutes]);
 
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {

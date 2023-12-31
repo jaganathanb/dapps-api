@@ -10,6 +10,7 @@
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "inlineSourceMap": true,
+    "resolveJsonModule": true,
     "paths": {
       "@db/*": ["./src/db/*"],
       "@common/*": ["./src/common/*"],
