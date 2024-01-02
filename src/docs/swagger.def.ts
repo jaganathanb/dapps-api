@@ -2,7 +2,6 @@ import { version } from '../../package.json';
 import { defaultConfig as config } from '@config/base';
 
 const swaggerDef = {
-  swagger: '2.0',
   info: {
     title: 'DApps API documentation',
     version,
@@ -11,7 +10,8 @@ const swaggerDef = {
       url: 'https://github.com/jaganathanb/dapps-api/blob/master/LICENSE',
     },
   },
-  host: `localhost:${config.port}/api/v1`,
+  host: `localhost:${config.port}`,
+  basePath: '/api/v1',
   schemes: ['http', 'https'],
   consumes: ['application/json'],
   produces: ['application/json'],
