@@ -20,9 +20,10 @@ func NewHealthHandler() *HealthHandler {
 // @Tags health
 // @Accept  json
 // @Produce  json
+// @Param version path int true "Version"
 // @Success 200 {object} helper.BaseHttpResponse "Success"
 // @Failure 400 {object} helper.BaseHttpResponse "Failed"
-// @Router /v1/health/ [get]
+// @Router /v{version}/health/ [get]
 func (h *HealthHandler) Health(c *gin.Context) {
 	c.JSON(http.StatusOK, helper.GenerateBaseResponse("Working!", true, 0))
 }

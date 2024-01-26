@@ -18,3 +18,20 @@ const (
 	RolesKey               string = "Roles"
 	ExpireTimeKey          string = "Exp"
 )
+
+type GstReturnType int
+
+const (
+	GSTR1  GstReturnType = 0
+	GSTR2B GstReturnType = 1
+	GSTR9  GstReturnType = 2
+)
+
+type GstReturnStatus int
+
+const (
+	INVOICE_CALL     = 0
+	INVOICE_RECEIVED = 1
+	INVOICE_ENTRY    = 2
+	FILED            = 3
+)

@@ -15,35 +15,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/v1/health/": {
-            "get": {
-                "description": "Health Check",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "health"
-                ],
-                "summary": "Health Check",
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Failed",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/v1/test/binder/body": {
             "post": {
                 "security": [
@@ -201,7 +172,103 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/users/login-by-mobile": {
+        "/v{version}/gsts": {
+            "post": {
+                "security": [
+                    {
+                        "AuthBearer": []
+                    }
+                ],
+                "description": "Create a GST entry into the system",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GSTs"
+                ],
+                "summary": "Creates GST",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Version",
+                        "name": "version",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "CreateGSTRequest",
+                        "name": "Request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.CreateGSTRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Failed",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Failed",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v{version}/health/": {
+            "get": {
+                "description": "Health Check",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Health Check",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Version",
+                        "name": "version",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Failed",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v{version}/users/login-by-mobile": {
             "post": {
                 "description": "RegisterLoginByMobileNumber",
                 "consumes": [
@@ -215,6 +282,13 @@ const docTemplate = `{
                 ],
                 "summary": "RegisterLoginByMobileNumber",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Version",
+                        "name": "version",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "description": "RegisterLoginByMobileRequest",
                         "name": "Request",
@@ -247,7 +321,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/users/login-by-username": {
+        "/v{version}/users/login-by-username": {
             "post": {
                 "description": "LoginByUsername",
                 "consumes": [
@@ -261,6 +335,13 @@ const docTemplate = `{
                 ],
                 "summary": "LoginByUsername",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Version",
+                        "name": "version",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "description": "LoginByUsernameRequest",
                         "name": "Request",
@@ -293,7 +374,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/users/register-by-username": {
+        "/v{version}/users/register-by-username": {
             "post": {
                 "description": "RegisterByUsername",
                 "consumes": [
@@ -307,6 +388,13 @@ const docTemplate = `{
                 ],
                 "summary": "RegisterByUsername",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Version",
+                        "name": "version",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "description": "RegisterUserByUsernameRequest",
                         "name": "Request",
@@ -339,7 +427,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/users/send-otp": {
+        "/v{version}/users/send-otp": {
             "post": {
                 "description": "Send otp to user",
                 "consumes": [
@@ -353,6 +441,13 @@ const docTemplate = `{
                 ],
                 "summary": "Send otp to user",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Version",
+                        "name": "version",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "description": "GetOtpRequest",
                         "name": "Request",
@@ -409,6 +504,77 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 11,
                     "minLength": 11
+                }
+            }
+        },
+        "constants.GstReturnType": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2
+            ],
+            "x-enum-varnames": [
+                "GSTR1",
+                "GSTR2B",
+                "GSTR9"
+            ]
+        },
+        "github_com_jaganathanb_dapps-api_api_dto.CreateGSTRequest": {
+            "type": "object",
+            "required": [
+                "gstin"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "maxLength": 128
+                },
+                "gstStatuses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.GSTStatus"
+                    }
+                },
+                "gstin": {
+                    "type": "string",
+                    "maxLength": 15
+                },
+                "locked": {
+                    "type": "boolean"
+                },
+                "mobileNumber": {
+                    "type": "string",
+                    "maxLength": 10
+                },
+                "registrationDate": {
+                    "type": "string"
+                },
+                "tradeName": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_jaganathanb_dapps-api_api_dto.GSTStatus": {
+            "type": "object",
+            "properties": {
+                "filedDate": {
+                    "type": "string"
+                },
+                "gstRType": {
+                    "$ref": "#/definitions/constants.GstReturnType"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "pendingReturns": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "taxPeriod": {
+                    "type": "string"
                 }
             }
         },

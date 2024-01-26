@@ -18,6 +18,55 @@ definitions:
     - last_name
     - mobile_number
     type: object
+  constants.GstReturnType:
+    enum:
+    - 0
+    - 1
+    - 2
+    type: integer
+    x-enum-varnames:
+    - GSTR1
+    - GSTR2B
+    - GSTR9
+  github_com_jaganathanb_dapps-api_api_dto.CreateGSTRequest:
+    properties:
+      address:
+        maxLength: 128
+        type: string
+      gstStatuses:
+        items:
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.GSTStatus'
+        type: array
+      gstin:
+        maxLength: 15
+        type: string
+      locked:
+        type: boolean
+      mobileNumber:
+        maxLength: 10
+        type: string
+      registrationDate:
+        type: string
+      tradeName:
+        type: string
+    required:
+    - gstin
+    type: object
+  github_com_jaganathanb_dapps-api_api_dto.GSTStatus:
+    properties:
+      filedDate:
+        type: string
+      gstRType:
+        $ref: '#/definitions/constants.GstReturnType'
+      notes:
+        type: string
+      pendingReturns:
+        type: string
+      status:
+        type: integer
+      taxPeriod:
+        type: string
+    type: object
   github_com_jaganathanb_dapps-api_api_dto.GetOtpRequest:
     properties:
       mobileNumber:
@@ -125,11 +174,54 @@ definitions:
 info:
   contact: {}
 paths:
-  /v1/health/:
+  /v{version}/gsts:
+    post:
+      consumes:
+      - application/json
+      description: Create a GST entry into the system
+      parameters:
+      - description: Version
+        in: path
+        name: version
+        required: true
+        type: integer
+      - description: CreateGSTRequest
+        in: body
+        name: Request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.CreateGSTRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Success
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "400":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "409":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+      security:
+      - AuthBearer: []
+      summary: Creates GST
+      tags:
+      - GSTs
+  /v{version}/health/:
     get:
       consumes:
       - application/json
       description: Health Check
+      parameters:
+      - description: Version
+        in: path
+        name: version
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
@@ -144,6 +236,146 @@ paths:
       summary: Health Check
       tags:
       - health
+  /v{version}/users/login-by-mobile:
+    post:
+      consumes:
+      - application/json
+      description: RegisterLoginByMobileNumber
+      parameters:
+      - description: Version
+        in: path
+        name: version
+        required: true
+        type: integer
+      - description: RegisterLoginByMobileRequest
+        in: body
+        name: Request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.RegisterLoginByMobileRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Success
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "400":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "409":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+      summary: RegisterLoginByMobileNumber
+      tags:
+      - Users
+  /v{version}/users/login-by-username:
+    post:
+      consumes:
+      - application/json
+      description: LoginByUsername
+      parameters:
+      - description: Version
+        in: path
+        name: version
+        required: true
+        type: integer
+      - description: LoginByUsernameRequest
+        in: body
+        name: Request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.LoginByUsernameRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Success
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "400":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "409":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+      summary: LoginByUsername
+      tags:
+      - Users
+  /v{version}/users/register-by-username:
+    post:
+      consumes:
+      - application/json
+      description: RegisterByUsername
+      parameters:
+      - description: Version
+        in: path
+        name: version
+        required: true
+        type: integer
+      - description: RegisterUserByUsernameRequest
+        in: body
+        name: Request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.RegisterUserByUsernameRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Success
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "400":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "409":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+      summary: RegisterByUsername
+      tags:
+      - Users
+  /v{version}/users/send-otp:
+    post:
+      consumes:
+      - application/json
+      description: Send otp to user
+      parameters:
+      - description: Version
+        in: path
+        name: version
+        required: true
+        type: integer
+      - description: GetOtpRequest
+        in: body
+        name: Request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.GetOtpRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Success
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "400":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "409":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+      summary: Send otp to user
+      tags:
+      - Users
   /v1/test/binder/body:
     post:
       consumes:
@@ -239,126 +471,6 @@ paths:
       summary: UserById
       tags:
       - Test
-  /v1/users/login-by-mobile:
-    post:
-      consumes:
-      - application/json
-      description: RegisterLoginByMobileNumber
-      parameters:
-      - description: RegisterLoginByMobileRequest
-        in: body
-        name: Request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.RegisterLoginByMobileRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Success
-          schema:
-            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
-        "400":
-          description: Failed
-          schema:
-            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
-        "409":
-          description: Failed
-          schema:
-            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
-      summary: RegisterLoginByMobileNumber
-      tags:
-      - Users
-  /v1/users/login-by-username:
-    post:
-      consumes:
-      - application/json
-      description: LoginByUsername
-      parameters:
-      - description: LoginByUsernameRequest
-        in: body
-        name: Request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.LoginByUsernameRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Success
-          schema:
-            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
-        "400":
-          description: Failed
-          schema:
-            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
-        "409":
-          description: Failed
-          schema:
-            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
-      summary: LoginByUsername
-      tags:
-      - Users
-  /v1/users/register-by-username:
-    post:
-      consumes:
-      - application/json
-      description: RegisterByUsername
-      parameters:
-      - description: RegisterUserByUsernameRequest
-        in: body
-        name: Request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.RegisterUserByUsernameRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Success
-          schema:
-            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
-        "400":
-          description: Failed
-          schema:
-            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
-        "409":
-          description: Failed
-          schema:
-            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
-      summary: RegisterByUsername
-      tags:
-      - Users
-  /v1/users/send-otp:
-    post:
-      consumes:
-      - application/json
-      description: Send otp to user
-      parameters:
-      - description: GetOtpRequest
-        in: body
-        name: Request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.GetOtpRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Success
-          schema:
-            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
-        "400":
-          description: Failed
-          schema:
-            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
-        "409":
-          description: Failed
-          schema:
-            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
-      summary: Send otp to user
-      tags:
-      - Users
 securityDefinitions:
   AuthBearer:
     in: header

@@ -25,11 +25,12 @@ func NewUsersHandler(cfg *config.Config) *UsersHandler {
 // @Tags Users
 // @Accept  json
 // @Produce  json
+// @Param version path int true "Version"
 // @Param Request body dto.LoginByUsernameRequest true "LoginByUsernameRequest"
 // @Success 201 {object} helper.BaseHttpResponse "Success"
 // @Failure 400 {object} helper.BaseHttpResponse "Failed"
 // @Failure 409 {object} helper.BaseHttpResponse "Failed"
-// @Router /v1/users/login-by-username [post]
+// @Router /v{version}/users/login-by-username [post]
 func (h *UsersHandler) LoginByUsername(c *gin.Context) {
 	req := new(dto.LoginByUsernameRequest)
 	err := c.ShouldBindJSON(&req)
@@ -54,11 +55,12 @@ func (h *UsersHandler) LoginByUsername(c *gin.Context) {
 // @Tags Users
 // @Accept  json
 // @Produce  json
+// @Param version path int true "Version"
 // @Param Request body dto.RegisterUserByUsernameRequest true "RegisterUserByUsernameRequest"
 // @Success 201 {object} helper.BaseHttpResponse "Success"
 // @Failure 400 {object} helper.BaseHttpResponse "Failed"
 // @Failure 409 {object} helper.BaseHttpResponse "Failed"
-// @Router /v1/users/register-by-username [post]
+// @Router /v{version}/users/register-by-username [post]
 func (h *UsersHandler) RegisterByUsername(c *gin.Context) {
 	req := new(dto.RegisterUserByUsernameRequest)
 	err := c.ShouldBindJSON(&req)
@@ -83,11 +85,12 @@ func (h *UsersHandler) RegisterByUsername(c *gin.Context) {
 // @Tags Users
 // @Accept  json
 // @Produce  json
+// @Param version path int true "Version"
 // @Param Request body dto.RegisterLoginByMobileRequest true "RegisterLoginByMobileRequest"
 // @Success 201 {object} helper.BaseHttpResponse "Success"
 // @Failure 400 {object} helper.BaseHttpResponse "Failed"
 // @Failure 409 {object} helper.BaseHttpResponse "Failed"
-// @Router /v1/users/login-by-mobile [post]
+// @Router /v{version}/users/login-by-mobile [post]
 func (h *UsersHandler) RegisterLoginByMobileNumber(c *gin.Context) {
 	req := new(dto.RegisterLoginByMobileRequest)
 	err := c.ShouldBindJSON(&req)
@@ -112,11 +115,12 @@ func (h *UsersHandler) RegisterLoginByMobileNumber(c *gin.Context) {
 // @Tags Users
 // @Accept  json
 // @Produce  json
+// @Param version path int true "Version"
 // @Param Request body dto.GetOtpRequest true "GetOtpRequest"
 // @Success 201 {object} helper.BaseHttpResponse "Success"
 // @Failure 400 {object} helper.BaseHttpResponse "Failed"
 // @Failure 409 {object} helper.BaseHttpResponse "Failed"
-// @Router /v1/users/send-otp [post]
+// @Router /v{version}/users/send-otp [post]
 func (h *UsersHandler) SendOtp(c *gin.Context) {
 	req := new(dto.GetOtpRequest)
 	err := c.ShouldBindJSON(&req)

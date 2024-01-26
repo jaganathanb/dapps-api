@@ -5,6 +5,25 @@
       "label": "swag",
       "command": "cd src && swag init -g cmd/main.go --parseDependency --parseInternal",
       "type": "shell"
+    },
+    {
+      "label": "go build",
+      "command": "cd src && go build -v -o server.exe ./cmd/main.go",
+      "type": "shell",
+      "dependsOn": "swag"
+    },
+    {
+      "label": "go run",
+      "command": "cd src && ./server.exe",
+      "type": "shell",
+      "dependsOn": "go build"
+    },
+    {
+      "label": "go air",
+      "command": "cd src && air --build.cmd 'go build -v -o server.exe ./cmd/main.go' --build.bin 'server.exe'",
+      "type": "shell",
+      "dependsOn": "swag",
+      "problemMatcher": []
     }
   ]
 }

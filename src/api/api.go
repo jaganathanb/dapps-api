@@ -24,6 +24,7 @@ var logger = logging.NewLogger(config.GetConfig())
 func InitServer(cfg *config.Config) {
 	gin.SetMode(cfg.Server.RunMode)
 	r := gin.New()
+
 	RegisterValidators()
 	RegisterPrometheus()
 
@@ -34,6 +35,7 @@ func InitServer(cfg *config.Config) {
 
 	RegisterRoutes(r, cfg)
 	RegisterSwagger(r, cfg)
+
 	logger := logging.NewLogger(cfg)
 	logger.Info(logging.General, logging.Startup, "Started", nil)
 	err := r.Run(fmt.Sprintf(":%s", cfg.Server.InternalPort))
@@ -53,6 +55,7 @@ func RegisterRoutes(r *gin.Engine, cfg *config.Config) {
 
 		// User
 		users := v1.Group("/users")
+		gsts := v1.Group("/gsts")
 
 		// Test
 		routers.Health(health)
@@ -60,6 +63,9 @@ func RegisterRoutes(r *gin.Engine, cfg *config.Config) {
 
 		// User
 		routers.User(users, cfg)
+
+		// GST
+		routers.Gst(gsts, cfg)
 
 		r.Static("/static", "./uploads")
 
