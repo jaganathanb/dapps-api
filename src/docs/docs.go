@@ -192,7 +192,12 @@ const docTemplate = `{
                 "summary": "Creates GST",
                 "parameters": [
                     {
+                        "enum": [
+                            1,
+                            2
+                        ],
                         "type": "integer",
+                        "default": 1,
                         "description": "Version",
                         "name": "version",
                         "in": "path",
@@ -205,6 +210,142 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.CreateGSTRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Failed",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Failed",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v{version}/gsts/page": {
+            "post": {
+                "security": [
+                    {
+                        "AuthBearer": []
+                    }
+                ],
+                "description": "Gets all available GSTs from the system",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GSTs"
+                ],
+                "summary": "Gets GST",
+                "parameters": [
+                    {
+                        "enum": [
+                            1,
+                            2
+                        ],
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Version",
+                        "name": "version",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request",
+                        "name": "Request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.PaginationInputWithFilter"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "GetGst response",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "result": {
+                                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.PagedList-github_com_jaganathanb_dapps-api_api_dto_GetGstResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v{version}/gsts/{gstin}/statuses": {
+            "put": {
+                "security": [
+                    {
+                        "AuthBearer": []
+                    }
+                ],
+                "description": "Updates the statuses of the GST entry into the system",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GSTs"
+                ],
+                "summary": "Updates GST statuses",
+                "parameters": [
+                    {
+                        "enum": [
+                            1,
+                            2
+                        ],
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Version",
+                        "name": "version",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Gstin",
+                        "name": "gstin",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "UpdateGstStatuses",
+                        "name": "Request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.UpdateGSTReturnStatusRequest"
                         }
                     }
                 ],
@@ -283,7 +424,12 @@ const docTemplate = `{
                 "summary": "RegisterLoginByMobileNumber",
                 "parameters": [
                     {
+                        "enum": [
+                            1,
+                            2
+                        ],
                         "type": "integer",
+                        "default": 1,
                         "description": "Version",
                         "name": "version",
                         "in": "path",
@@ -336,7 +482,12 @@ const docTemplate = `{
                 "summary": "LoginByUsername",
                 "parameters": [
                     {
+                        "enum": [
+                            1,
+                            2
+                        ],
                         "type": "integer",
+                        "default": 1,
                         "description": "Version",
                         "name": "version",
                         "in": "path",
@@ -389,7 +540,12 @@ const docTemplate = `{
                 "summary": "RegisterByUsername",
                 "parameters": [
                     {
+                        "enum": [
+                            1,
+                            2
+                        ],
                         "type": "integer",
+                        "default": 1,
                         "description": "Version",
                         "name": "version",
                         "in": "path",
@@ -442,7 +598,12 @@ const docTemplate = `{
                 "summary": "Send otp to user",
                 "parameters": [
                     {
+                        "enum": [
+                            1,
+                            2
+                        ],
                         "type": "integer",
+                        "default": 1,
                         "description": "Version",
                         "name": "version",
                         "in": "path",
@@ -555,6 +716,25 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_jaganathanb_dapps-api_api_dto.Filter": {
+            "type": "object",
+            "properties": {
+                "filterType": {
+                    "description": "text number",
+                    "type": "string"
+                },
+                "from": {
+                    "type": "string"
+                },
+                "to": {
+                    "type": "string"
+                },
+                "type": {
+                    "description": "contains notContains equals notEqual startsWith lessThan lessThanOrEqual greaterThan greaterThanOrEqual inRange endsWith",
+                    "type": "string"
+                }
+            }
+        },
         "github_com_jaganathanb_dapps-api_api_dto.GSTStatus": {
             "type": "object",
             "properties": {
@@ -574,6 +754,41 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "taxPeriod": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_jaganathanb_dapps-api_api_dto.GetGstResponse": {
+            "type": "object",
+            "required": [
+                "gstin"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "maxLength": 128
+                },
+                "gstStatuses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.GSTStatus"
+                    }
+                },
+                "gstin": {
+                    "type": "string",
+                    "maxLength": 15
+                },
+                "locked": {
+                    "type": "boolean"
+                },
+                "mobileNumber": {
+                    "type": "string",
+                    "maxLength": 10
+                },
+                "registrationDate": {
+                    "type": "string"
+                },
+                "tradeName": {
                     "type": "string"
                 }
             }
@@ -605,6 +820,55 @@ const docTemplate = `{
                 "username": {
                     "type": "string",
                     "minLength": 5
+                }
+            }
+        },
+        "github_com_jaganathanb_dapps-api_api_dto.PagedList-github_com_jaganathanb_dapps-api_api_dto_GetGstResponse": {
+            "type": "object",
+            "properties": {
+                "hasNextPage": {
+                    "type": "boolean"
+                },
+                "hasPreviousPage": {
+                    "type": "boolean"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.GetGstResponse"
+                    }
+                },
+                "pageNumber": {
+                    "type": "integer"
+                },
+                "totalPages": {
+                    "type": "integer"
+                },
+                "totalRows": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_jaganathanb_dapps-api_api_dto.PaginationInputWithFilter": {
+            "type": "object",
+            "properties": {
+                "filter": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.Filter"
+                    }
+                },
+                "pageNumber": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "sort": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.Sort"
+                    }
                 }
             }
         },
@@ -655,6 +919,35 @@ const docTemplate = `{
                 "username": {
                     "type": "string",
                     "minLength": 5
+                }
+            }
+        },
+        "github_com_jaganathanb_dapps-api_api_dto.Sort": {
+            "type": "object",
+            "properties": {
+                "colId": {
+                    "type": "string"
+                },
+                "sort": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_jaganathanb_dapps-api_api_dto.UpdateGSTReturnStatusRequest": {
+            "type": "object",
+            "required": [
+                "gstin"
+            ],
+            "properties": {
+                "gstStatuses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.GSTStatus"
+                    }
+                },
+                "gstin": {
+                    "type": "string",
+                    "maxLength": 15
                 }
             }
         },

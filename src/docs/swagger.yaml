@@ -52,6 +52,20 @@ definitions:
     required:
     - gstin
     type: object
+  github_com_jaganathanb_dapps-api_api_dto.Filter:
+    properties:
+      filterType:
+        description: text number
+        type: string
+      from:
+        type: string
+      to:
+        type: string
+      type:
+        description: contains notContains equals notEqual startsWith lessThan lessThanOrEqual
+          greaterThan greaterThanOrEqual inRange endsWith
+        type: string
+    type: object
   github_com_jaganathanb_dapps-api_api_dto.GSTStatus:
     properties:
       filedDate:
@@ -66,6 +80,30 @@ definitions:
         type: integer
       taxPeriod:
         type: string
+    type: object
+  github_com_jaganathanb_dapps-api_api_dto.GetGstResponse:
+    properties:
+      address:
+        maxLength: 128
+        type: string
+      gstStatuses:
+        items:
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.GSTStatus'
+        type: array
+      gstin:
+        maxLength: 15
+        type: string
+      locked:
+        type: boolean
+      mobileNumber:
+        maxLength: 10
+        type: string
+      registrationDate:
+        type: string
+      tradeName:
+        type: string
+    required:
+    - gstin
     type: object
   github_com_jaganathanb_dapps-api_api_dto.GetOtpRequest:
     properties:
@@ -87,6 +125,38 @@ definitions:
     required:
     - password
     - username
+    type: object
+  github_com_jaganathanb_dapps-api_api_dto.PagedList-github_com_jaganathanb_dapps-api_api_dto_GetGstResponse:
+    properties:
+      hasNextPage:
+        type: boolean
+      hasPreviousPage:
+        type: boolean
+      items:
+        items:
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.GetGstResponse'
+        type: array
+      pageNumber:
+        type: integer
+      totalPages:
+        type: integer
+      totalRows:
+        type: integer
+    type: object
+  github_com_jaganathanb_dapps-api_api_dto.PaginationInputWithFilter:
+    properties:
+      filter:
+        additionalProperties:
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.Filter'
+        type: object
+      pageNumber:
+        type: integer
+      pageSize:
+        type: integer
+      sort:
+        items:
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.Sort'
+        type: array
     type: object
   github_com_jaganathanb_dapps-api_api_dto.RegisterLoginByMobileRequest:
     properties:
@@ -124,6 +194,25 @@ definitions:
     - lastName
     - password
     - username
+    type: object
+  github_com_jaganathanb_dapps-api_api_dto.Sort:
+    properties:
+      colId:
+        type: string
+      sort:
+        type: string
+    type: object
+  github_com_jaganathanb_dapps-api_api_dto.UpdateGSTReturnStatusRequest:
+    properties:
+      gstStatuses:
+        items:
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.GSTStatus'
+        type: array
+      gstin:
+        maxLength: 15
+        type: string
+    required:
+    - gstin
     type: object
   github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse:
     properties:
@@ -180,7 +269,11 @@ paths:
       - application/json
       description: Create a GST entry into the system
       parameters:
-      - description: Version
+      - default: 1
+        description: Version
+        enum:
+        - 1
+        - 2
         in: path
         name: version
         required: true
@@ -209,6 +302,92 @@ paths:
       security:
       - AuthBearer: []
       summary: Creates GST
+      tags:
+      - GSTs
+  /v{version}/gsts/{gstin}/statuses:
+    put:
+      consumes:
+      - application/json
+      description: Updates the statuses of the GST entry into the system
+      parameters:
+      - default: 1
+        description: Version
+        enum:
+        - 1
+        - 2
+        in: path
+        name: version
+        required: true
+        type: integer
+      - description: Gstin
+        in: path
+        name: gstin
+        required: true
+        type: string
+      - description: UpdateGstStatuses
+        in: body
+        name: Request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.UpdateGSTReturnStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Success
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "400":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "409":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+      security:
+      - AuthBearer: []
+      summary: Updates GST statuses
+      tags:
+      - GSTs
+  /v{version}/gsts/page:
+    post:
+      consumes:
+      - application/json
+      description: Gets all available GSTs from the system
+      parameters:
+      - default: 1
+        description: Version
+        enum:
+        - 1
+        - 2
+        in: path
+        name: version
+        required: true
+        type: integer
+      - description: Request
+        in: body
+        name: Request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.PaginationInputWithFilter'
+      responses:
+        "200":
+          description: GetGst response
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+            - properties:
+                result:
+                  $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.PagedList-github_com_jaganathanb_dapps-api_api_dto_GetGstResponse'
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+      security:
+      - AuthBearer: []
+      summary: Gets GST
       tags:
       - GSTs
   /v{version}/health/:
@@ -242,7 +421,11 @@ paths:
       - application/json
       description: RegisterLoginByMobileNumber
       parameters:
-      - description: Version
+      - default: 1
+        description: Version
+        enum:
+        - 1
+        - 2
         in: path
         name: version
         required: true
@@ -277,7 +460,11 @@ paths:
       - application/json
       description: LoginByUsername
       parameters:
-      - description: Version
+      - default: 1
+        description: Version
+        enum:
+        - 1
+        - 2
         in: path
         name: version
         required: true
@@ -312,7 +499,11 @@ paths:
       - application/json
       description: RegisterByUsername
       parameters:
-      - description: Version
+      - default: 1
+        description: Version
+        enum:
+        - 1
+        - 2
         in: path
         name: version
         required: true
@@ -347,7 +538,11 @@ paths:
       - application/json
       description: Send otp to user
       parameters:
-      - description: Version
+      - default: 1
+        description: Version
+        enum:
+        - 1
+        - 2
         in: path
         name: version
         required: true

@@ -25,7 +25,7 @@ func NewUsersHandler(cfg *config.Config) *UsersHandler {
 // @Tags Users
 // @Accept  json
 // @Produce  json
-// @Param version path int true "Version"
+// @Param version path int true "Version" Enums(1, 2) default(1)
 // @Param Request body dto.LoginByUsernameRequest true "LoginByUsernameRequest"
 // @Success 201 {object} helper.BaseHttpResponse "Success"
 // @Failure 400 {object} helper.BaseHttpResponse "Failed"
@@ -55,7 +55,7 @@ func (h *UsersHandler) LoginByUsername(c *gin.Context) {
 // @Tags Users
 // @Accept  json
 // @Produce  json
-// @Param version path int true "Version"
+// @Param version path int true "Version" Enums(1, 2) default(1)
 // @Param Request body dto.RegisterUserByUsernameRequest true "RegisterUserByUsernameRequest"
 // @Success 201 {object} helper.BaseHttpResponse "Success"
 // @Failure 400 {object} helper.BaseHttpResponse "Failed"
@@ -85,7 +85,7 @@ func (h *UsersHandler) RegisterByUsername(c *gin.Context) {
 // @Tags Users
 // @Accept  json
 // @Produce  json
-// @Param version path int true "Version"
+// @Param version path int true "Version" Enums(1, 2) default(1)
 // @Param Request body dto.RegisterLoginByMobileRequest true "RegisterLoginByMobileRequest"
 // @Success 201 {object} helper.BaseHttpResponse "Success"
 // @Failure 400 {object} helper.BaseHttpResponse "Failed"
@@ -115,7 +115,7 @@ func (h *UsersHandler) RegisterLoginByMobileNumber(c *gin.Context) {
 // @Tags Users
 // @Accept  json
 // @Produce  json
-// @Param version path int true "Version"
+// @Param version path int true "Version" Enums(1, 2) default(1)
 // @Param Request body dto.GetOtpRequest true "GetOtpRequest"
 // @Success 201 {object} helper.BaseHttpResponse "Success"
 // @Failure 400 {object} helper.BaseHttpResponse "Failed"

@@ -23,4 +23,5 @@ const (
 
 	// GST
 	GstNotFound = "GST not found"
+	GstExists   = "GST exists"
 )

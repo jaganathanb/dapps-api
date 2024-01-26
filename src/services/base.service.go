@@ -58,7 +58,6 @@ func (s *BaseService[T, Tc, Tu, Tr]) Create(ctx context.Context, req *Tc) (*Tr, 
 }
 
 func (s *BaseService[T, Tc, Tu, Tr]) Update(ctx context.Context, id int, req *Tu) (*Tr, error) {
-
 	updateMap, _ := common.TypeConverter[map[string]interface{}](req)
 	snakeMap := map[string]interface{}{}
 	for k, v := range *updateMap {
@@ -80,7 +79,6 @@ func (s *BaseService[T, Tc, Tu, Tr]) Update(ctx context.Context, id int, req *Tu
 	tx.Commit()
 	metrics.DbCall.WithLabelValues(reflect.TypeOf(*model).String(), "Update", "Success").Inc()
 	return s.GetById(ctx, id)
-
 }
 
 func (s *BaseService[T, Tc, Tu, Tr]) Delete(ctx context.Context, id int) error {

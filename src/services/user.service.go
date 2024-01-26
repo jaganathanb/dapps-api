@@ -24,6 +24,7 @@ type UserService struct {
 func NewUserService(cfg *config.Config) *UserService {
 	database := db.GetDb()
 	logger := logging.NewLogger(cfg)
+
 	return &UserService{
 		cfg:          cfg,
 		database:     database,

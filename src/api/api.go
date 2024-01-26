@@ -55,7 +55,7 @@ func RegisterRoutes(r *gin.Engine, cfg *config.Config) {
 
 		// User
 		users := v1.Group("/users")
-		gsts := v1.Group("/gsts")
+		gsts := v1.Group("/gsts", middlewares.Authentication(cfg))
 
 		// Test
 		routers.Health(health)

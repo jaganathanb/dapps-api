@@ -16,6 +16,8 @@ type CreateGSTRequest struct {
 	GSTStatuses      []GSTStatus `json:"gstStatuses"`
 }
 
+type GetGstResponse = CreateGSTRequest
+
 type UpdateGSTReturnStatusRequest struct {
 	Gstin       string      `json:"gstin" binding:"required,max=15"`
 	GSTStatuses []GSTStatus `json:"gstStatuses"`
