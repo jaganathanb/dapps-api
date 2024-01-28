@@ -22,6 +22,7 @@ var (
 
 var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
 var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
+var matchGstIn = regexp.MustCompile(`(?m)^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$`)
 
 func CheckPassword(password string) bool {
 	cfg := config.GetConfig()
@@ -156,4 +157,26 @@ func ToSnakeCase(str string) string {
 	snake := matchFirstCap.ReplaceAllString(str, "${1}_${2}")
 	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
 	return strings.ToLower(snake)
+}
+
+func CheckGstins(gstins []string) bool {
+	var ids []string
+	for _, v := range gstins {
+		var g = matchGstIn.FindAllString(v, -1)
+		if len(g) > 0 {
+			ids = append(ids, g[0])
+		}
+	}
+
+	return len(ids) > 0
+}
+
+func CheckGstin(gstin string) bool {
+	var ids []string
+	var g = matchGstIn.FindAllString(gstin, -1)
+	if len(g) > 0 {
+		ids = append(ids, g[0])
+	}
+
+	return len(ids) > 0
 }

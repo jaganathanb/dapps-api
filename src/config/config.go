@@ -130,6 +130,7 @@ func ParseConfig(v *viper.Viper) (*Config, error) {
 	}
 	return &cfg, nil
 }
+
 func LoadConfig(filename string, fileType string) (*viper.Viper, error) {
 	v := viper.New()
 	v.SetConfigType(fileType)

@@ -61,7 +61,7 @@ func (h *GstsHandler) CreateGsts(c *gin.Context) {
 	err = h.service.CreateGsts(req)
 	if err != nil {
 		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(err),
-			helper.GenerateBaseResponseWithError(nil, false, helper.InternalError, err))
+			helper.GenerateBaseResponseWithValidationError(nil, true, helper.ValidationError, err))
 		return
 	}
 

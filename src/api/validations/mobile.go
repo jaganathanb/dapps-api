@@ -5,12 +5,12 @@ import (
 	"github.com/jaganathanb/dapps-api/common"
 )
 
-func IranianMobileNumberValidator(fld validator.FieldLevel) bool {
+func IndianMobileNumberValidator(fld validator.FieldLevel) bool {
 
 	value, ok := fld.Field().Interface().(string)
 	if !ok {
 		return false
 	}
 
-	return common.IranianMobileNumberValidate(value)
+	return common.IndianMobileNumberValidate(value)
 }

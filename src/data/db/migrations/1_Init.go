@@ -27,6 +27,7 @@ func createTables(database *gorm.DB) {
 	tables = addNewTable(database, models.Role{}, tables)
 	tables = addNewTable(database, models.UserRole{}, tables)
 	tables = addNewTable(database, models.Gst{}, tables)
+	tables = addNewTable(database, models.PAddress{}, tables)
 	tables = addNewTable(database, models.GstStatus{}, tables)
 
 	err := database.Migrator().CreateTable(tables...)
@@ -40,6 +41,7 @@ func addNewTable(database *gorm.DB, model interface{}, tables []interface{}) []i
 	if !database.Migrator().HasTable(model) {
 		tables = append(tables, model)
 	}
+
 	return tables
 }
 

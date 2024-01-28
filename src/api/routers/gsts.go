@@ -10,8 +10,12 @@ import (
 func Gst(router *gin.RouterGroup, cfg *config.Config) {
 	h := handlers.NewGstsHandler(cfg)
 
-	router.POST("/", middlewares.Authorization([]string{"admin"}), h.CreateGsts)
-	router.POST("/page", middlewares.Authorization([]string{"admin"}), h.GetGsts)
-	router.GET("/", middlewares.Authorization([]string{"admin"}), h.GetGsts)
-	router.PUT("/:gstin/statuses", middlewares.Authorization([]string{"admin"}), h.UpdateGstStatuses)
+	if cfg.Server.RunMode == "release" {
+		router.Use(middlewares.Authentication(cfg), middlewares.Authorization([]string{"admin"}))
+	}
+
+	router.POST("/", h.CreateGsts)
+	router.POST("/page", h.GetGsts)
+	router.GET("/", h.GetGsts)
+	router.PUT("/:gstin/statuses", h.UpdateGstStatuses)
 }

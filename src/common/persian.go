@@ -5,10 +5,10 @@ import (
 	"regexp"
 )
 
-const iranianMobileNumberPattern string = `^09(1[0-9]|2[0-2]|3[0-9]|9[0-9])[0-9]{7}$`
+const indianMobileNumberPattern string = `^[6-9]\d{9}$`
 
-func IranianMobileNumberValidate(mobileNumber string) bool {
-	res, err := regexp.MatchString(iranianMobileNumberPattern, mobileNumber)
+func IndianMobileNumberValidate(mobileNumber string) bool {
+	res, err := regexp.MatchString(indianMobileNumberPattern, mobileNumber)
 	if err != nil {
 		log.Print(err.Error())
 	}

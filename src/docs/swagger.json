@@ -413,7 +413,12 @@
                 "summary": "Mock data",
                 "parameters": [
                     {
+                        "enum": [
+                            1,
+                            2
+                        ],
                         "type": "integer",
+                        "default": 1,
                         "description": "Version",
                         "name": "version",
                         "in": "path",
@@ -772,8 +777,7 @@
                     }
                 },
                 "gstin": {
-                    "type": "string",
-                    "maxLength": 15
+                    "type": "string"
                 },
                 "locked": {
                     "type": "boolean"
@@ -966,8 +970,7 @@
                     }
                 },
                 "gstin": {
-                    "type": "string",
-                    "maxLength": 15
+                    "type": "string"
                 }
             }
         },

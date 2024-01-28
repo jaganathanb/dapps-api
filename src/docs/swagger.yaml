@@ -61,7 +61,6 @@ definitions:
           $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.GstStatus'
         type: array
       gstin:
-        maxLength: 15
         type: string
       locked:
         type: boolean
@@ -194,7 +193,6 @@ definitions:
           $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.GstStatus'
         type: array
       gstin:
-        maxLength: 15
         type: string
     required:
     - gstin
@@ -406,7 +404,11 @@ paths:
       - application/json
       description: Mock data endpoint
       parameters:
-      - description: Version
+      - default: 1
+        description: Version
+        enum:
+        - 1
+        - 2
         in: path
         name: version
         required: true

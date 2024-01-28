@@ -55,7 +55,7 @@ func RegisterRoutes(r *gin.Engine, cfg *config.Config) {
 
 		// User, GSTs
 		users := v1.Group("/users")
-		gsts := v1.Group("/gsts", middlewares.Authentication(cfg))
+		gsts := v1.Group("/gsts")
 		mocks := v1.Group("/mocks")
 
 		// Test
@@ -82,11 +82,15 @@ func RegisterRoutes(r *gin.Engine, cfg *config.Config) {
 func RegisterValidators() {
 	val, ok := binding.Validator.Engine().(*validator.Validate)
 	if ok {
-		err := val.RegisterValidation("mobile", validation.IranianMobileNumberValidator, true)
+		err := val.RegisterValidation("mobile", validation.IndianMobileNumberValidator, true)
 		if err != nil {
 			logger.Error(logging.Validation, logging.Startup, err.Error(), nil)
 		}
 		err = val.RegisterValidation("password", validation.PasswordValidator, true)
+		if err != nil {
+			logger.Error(logging.Validation, logging.Startup, err.Error(), nil)
+		}
+		err = val.RegisterValidation("gstins", validation.GstinsValidator, true)
 		if err != nil {
 			logger.Error(logging.Validation, logging.Startup, err.Error(), nil)
 		}

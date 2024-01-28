@@ -29,12 +29,14 @@ type BaseService[T any, Tc any, Tu any, Tr any] struct {
 	Database *gorm.DB
 	Logger   logging.Logger
 	Preloads []preload
+	Config   *config.Config
 }
 
 func NewBaseService[T any, Tc any, Tu any, Tr any](cfg *config.Config) *BaseService[T, Tc, Tu, Tr] {
 	return &BaseService[T, Tc, Tu, Tr]{
 		Database: db.GetDb(),
 		Logger:   logging.NewLogger(cfg),
+		Config:   cfg,
 	}
 }
 

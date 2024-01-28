@@ -12,6 +12,13 @@
       "program": "${workspaceFolder}/src/cmd",
       "preLaunchTask": "swag",
       "cwd": "${workspaceFolder}/src"
+    },
+    {
+      "name": "Attach to Process",
+      "type": "go",
+      "request": "attach",
+      "mode": "local",
+      "processId": 0
     }
   ]
 }

@@ -424,7 +424,12 @@ const docTemplate = `{
                 "summary": "Mock data",
                 "parameters": [
                     {
+                        "enum": [
+                            1,
+                            2
+                        ],
                         "type": "integer",
+                        "default": 1,
                         "description": "Version",
                         "name": "version",
                         "in": "path",
@@ -783,8 +788,7 @@ const docTemplate = `{
                     }
                 },
                 "gstin": {
-                    "type": "string",
-                    "maxLength": 15
+                    "type": "string"
                 },
                 "locked": {
                     "type": "boolean"
@@ -977,8 +981,7 @@ const docTemplate = `{
                     }
                 },
                 "gstin": {
-                    "type": "string",
-                    "maxLength": 15
+                    "type": "string"
                 }
             }
         },

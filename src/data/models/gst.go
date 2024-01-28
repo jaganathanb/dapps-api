@@ -8,13 +8,41 @@ import (
 
 type Gst struct {
 	BaseModel
-	Gstin            string      `gorm:"type:string;size:30;not null,unique"`
-	TradeName        string      `gorm:"type:string;size:64;not null"`
-	RegistrationDate time.Time   `gorm:"type:TIMESTAMP;default:CURRENT_TIMESTAMP;not null"`
-	Locked           bool        `gorm:"type:bool;default:false"`
-	Address          string      `gorm:"type:string;size:128;null"`
-	MobileNumber     string      `gorm:"type:string;size:10;null;default:null"`
-	GstStatuses      []GstStatus `gorm:"foreignKey:Gstin;references:Gstin"`
+	Gstin            string    `json:"gstin"`
+	Name             string    `json:"name"`
+	Tradename        string    `json:"tradename"`
+	RegistrationDate string    `json:"registrationDate"`
+	Center           string    `json:"center"`
+	State            string    `json:"state"`
+	CenterCd         string    `json:"center_cd"`
+	StateCd          string    `json:"state_cd"`
+	Constitution     string    `json:"constitution"`
+	Type             string    `json:"type"`
+	Status           string    `json:"status"`
+	LastUpdateDate   time.Time `json:"lastUpdateDate"`
+	CancellationDate time.Time `json:"cancellationDate"`
+	Nature           []string  `json:"nature"`
+	EinvoiceStatus   string    `json:"einvoiceStatus"`
+	Adadr            []string  `json:"adadr"`
+	Pradr            PAddress  `json:"pradr"`
+}
+
+type PAddress struct {
+	Bnm        string `json:"bnm"`
+	St         string `json:"st"`
+	Loc        string `json:"loc"`
+	Bno        string `json:"bno"`
+	Stcd       string `json:"stcd"`
+	Flno       string `json:"flno"`
+	Lt         string `json:"lt"`
+	Lg         string `json:"lg"`
+	Pncd       string `json:"pncd"`
+	Ntr        string `json:"ntr"`
+	District   string `json:"district"`
+	City       string `json:"city"`
+	Locality   string `json:"locality"`
+	Geocodelvl string `json:"geocodelvl"`
+	LandMark   string `json:"landMark"`
 }
 
 type GstStatus struct {
@@ -25,5 +53,6 @@ type GstStatus struct {
 	PendingReturns string
 	TaxPeriod      string
 	Notes          string
+	ArnNumber      string
 	Gstin          string `gorm:"type:string;size:30;not null,unique"`
 }

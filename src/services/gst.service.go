@@ -28,7 +28,9 @@ func NewGstService(cfg *config.Config) *GstService {
 			Logger:   logging.NewLogger(cfg),
 			Preloads: []preload{
 				{string: "GstStatuses"},
+				{string: "PAddress"},
 			},
+			Config: cfg,
 		},
 	}
 }
@@ -44,7 +46,13 @@ func (s *GstService) CreateGsts(req *dto.CreateGstsRequest) error {
 		if slices.Contains[[]string](exists, v) {
 			s.base.Logger.Warn(logging.Sqlite3, logging.Select, fmt.Sprintf(service_errors.GstExists, v), nil)
 		} else {
-			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("https://taxpayer.irisgst.com/api/search?gstin=%s", v), nil)
+			var url string
+			if s.base.Config.Server.RunMode == "release" {
+				url = fmt.Sprintf("https://taxpayer.irisgst.com/api/search?gstin=%s", v)
+			} else {
+				url = fmt.Sprintf("http://localhost:%s/api/mocks/gsts/%s", s.base.Config.Server.ExternalPort, v)
+			}
+			req, err := http.NewRequest(http.MethodGet, url, nil)
 			if err != nil {
 				s.base.Logger.Error(logging.Category(logging.ExternalService), logging.Api, err.Error(), nil)
 			} else {
@@ -53,21 +61,15 @@ func (s *GstService) CreateGsts(req *dto.CreateGstsRequest) error {
 		}
 	}
 
-	res, _ := httpwrapper.AsyncHTTP[dto.GetGstResponse](reqs)
+	if len(reqs) == 0 {
+		return nil
+	}
+
+	res, _ := httpwrapper.AsyncHTTP[models.Gst](reqs)
 
 	tx := s.base.Database.Begin()
 	for _, v := range res {
-		gst := models.Gst{
-			Gstin:            v.Gstin,
-			TradeName:        v.TradeName,
-			RegistrationDate: v.RegistrationDate,
-			Locked:           v.Locked,
-			Address:          v.Address,
-			MobileNumber:     v.MobileNumber,
-			GstStatuses:      mapGSTStatus(v.GstStatuses),
-		}
-
-		err = tx.Create(&gst).Error
+		err = tx.Create(&v).Error
 		if err != nil {
 			tx.Rollback()
 			s.base.Logger.Error(logging.Sqlite3, logging.Rollback, err.Error(), nil)
