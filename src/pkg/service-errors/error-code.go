@@ -22,6 +22,6 @@ const (
 	RecordNotFound = "record not found"
 
 	// GST
-	GstNotFound = "GST not found"
-	GstExists   = "GST exists"
+	GstNotFound = "GST %s does not exists in the system"
+	GstExists   = "GST %s already exists in the system"
 )

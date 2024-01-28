@@ -28,29 +28,14 @@ definitions:
     - GSTR1
     - GSTR2B
     - GSTR9
-  github_com_jaganathanb_dapps-api_api_dto.CreateGSTRequest:
+  github_com_jaganathanb_dapps-api_api_dto.CreateGstsRequest:
     properties:
-      address:
-        maxLength: 128
-        type: string
-      gstStatuses:
+      gstins:
         items:
-          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.GSTStatus'
+          type: string
         type: array
-      gstin:
-        maxLength: 15
-        type: string
-      locked:
-        type: boolean
-      mobileNumber:
-        maxLength: 10
-        type: string
-      registrationDate:
-        type: string
-      tradeName:
-        type: string
     required:
-    - gstin
+    - gstins
     type: object
   github_com_jaganathanb_dapps-api_api_dto.Filter:
     properties:
@@ -66,21 +51,6 @@ definitions:
           greaterThan greaterThanOrEqual inRange endsWith
         type: string
     type: object
-  github_com_jaganathanb_dapps-api_api_dto.GSTStatus:
-    properties:
-      filedDate:
-        type: string
-      gstRType:
-        $ref: '#/definitions/constants.GstReturnType'
-      notes:
-        type: string
-      pendingReturns:
-        type: string
-      status:
-        type: integer
-      taxPeriod:
-        type: string
-    type: object
   github_com_jaganathanb_dapps-api_api_dto.GetGstResponse:
     properties:
       address:
@@ -88,7 +58,7 @@ definitions:
         type: string
       gstStatuses:
         items:
-          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.GSTStatus'
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.GstStatus'
         type: array
       gstin:
         maxLength: 15
@@ -113,6 +83,21 @@ definitions:
         type: string
     required:
     - mobileNumber
+    type: object
+  github_com_jaganathanb_dapps-api_api_dto.GstStatus:
+    properties:
+      filedDate:
+        type: string
+      gstRType:
+        $ref: '#/definitions/constants.GstReturnType'
+      notes:
+        type: string
+      pendingReturns:
+        type: string
+      status:
+        type: integer
+      taxPeriod:
+        type: string
     type: object
   github_com_jaganathanb_dapps-api_api_dto.LoginByUsernameRequest:
     properties:
@@ -202,11 +187,11 @@ definitions:
       sort:
         type: string
     type: object
-  github_com_jaganathanb_dapps-api_api_dto.UpdateGSTReturnStatusRequest:
+  github_com_jaganathanb_dapps-api_api_dto.UpdateGstReturnStatusRequest:
     properties:
       gstStatuses:
         items:
-          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.GSTStatus'
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.GstStatus'
         type: array
       gstin:
         maxLength: 15
@@ -267,7 +252,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a GST entry into the system
+      description: Create GST entries into the system
       parameters:
       - default: 1
         description: Version
@@ -278,12 +263,12 @@ paths:
         name: version
         required: true
         type: integer
-      - description: CreateGSTRequest
+      - description: CreateGstsRequest
         in: body
         name: Request
         required: true
         schema:
-          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.CreateGSTRequest'
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.CreateGstsRequest'
       produces:
       - application/json
       responses:
@@ -301,7 +286,7 @@ paths:
             $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
       security:
       - AuthBearer: []
-      summary: Creates GST
+      summary: Creates GSTs
       tags:
       - GSTs
   /v{version}/gsts/{gstin}/statuses:
@@ -329,7 +314,7 @@ paths:
         name: Request
         required: true
         schema:
-          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.UpdateGSTReturnStatusRequest'
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.UpdateGstReturnStatusRequest'
       produces:
       - application/json
       responses:
@@ -415,6 +400,41 @@ paths:
       summary: Health Check
       tags:
       - health
+  /v{version}/mocks/{filename}/{prop}:
+    get:
+      consumes:
+      - application/json
+      description: Mock data endpoint
+      parameters:
+      - description: Version
+        in: path
+        name: version
+        required: true
+        type: integer
+      - description: File name
+        in: path
+        name: filename
+        required: true
+        type: string
+      - description: Property name
+        in: path
+        name: prop
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "400":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+      summary: Mock data
+      tags:
+      - Mock
   /v{version}/users/login-by-mobile:
     post:
       consumes:

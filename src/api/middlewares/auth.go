@@ -10,7 +10,7 @@ import (
 	"github.com/jaganathanb/dapps-api/api/helper"
 	"github.com/jaganathanb/dapps-api/config"
 	"github.com/jaganathanb/dapps-api/constants"
-	"github.com/jaganathanb/dapps-api/pkg/service_errors"
+	service_errors "github.com/jaganathanb/dapps-api/pkg/service-errors"
 	"github.com/jaganathanb/dapps-api/services"
 )
 

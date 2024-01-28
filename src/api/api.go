@@ -53,19 +53,19 @@ func RegisterRoutes(r *gin.Engine, cfg *config.Config) {
 		health := v1.Group("/health")
 		test_router := v1.Group("/test" /*middlewares.Authentication(cfg), middlewares.Authorization([]string{"admin"})*/)
 
-		// User
+		// User, GSTs
 		users := v1.Group("/users")
 		gsts := v1.Group("/gsts", middlewares.Authentication(cfg))
+		mocks := v1.Group("/mocks")
 
 		// Test
 		routers.Health(health)
 		routers.TestRouter(test_router)
 
-		// User
+		// User, GST & Mock
 		routers.User(users, cfg)
-
-		// GST
 		routers.Gst(gsts, cfg)
+		routers.Mock(mocks, cfg)
 
 		r.Static("/static", "./uploads")
 

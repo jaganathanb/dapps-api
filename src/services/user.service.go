@@ -8,7 +8,7 @@ import (
 	"github.com/jaganathanb/dapps-api/data/db"
 	"github.com/jaganathanb/dapps-api/data/models"
 	"github.com/jaganathanb/dapps-api/pkg/logging"
-	"github.com/jaganathanb/dapps-api/pkg/service_errors"
+	service_errors "github.com/jaganathanb/dapps-api/pkg/service-errors"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )

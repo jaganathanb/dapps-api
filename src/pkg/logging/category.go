@@ -40,6 +40,8 @@ const (
 
 	// IO
 	RemoveFile SubCategory = "RemoveFile"
+	OpenFile   SubCategory = "OpenFile"
+	ReadFile   SubCategory = "ReadFile"
 )
 
 const (

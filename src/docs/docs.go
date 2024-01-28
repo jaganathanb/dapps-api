@@ -179,7 +179,7 @@ const docTemplate = `{
                         "AuthBearer": []
                     }
                 ],
-                "description": "Create a GST entry into the system",
+                "description": "Create GST entries into the system",
                 "consumes": [
                     "application/json"
                 ],
@@ -189,7 +189,7 @@ const docTemplate = `{
                 "tags": [
                     "GSTs"
                 ],
-                "summary": "Creates GST",
+                "summary": "Creates GSTs",
                 "parameters": [
                     {
                         "enum": [
@@ -204,12 +204,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "CreateGSTRequest",
+                        "description": "CreateGstsRequest",
                         "name": "Request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.CreateGSTRequest"
+                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.CreateGstsRequest"
                         }
                     }
                 ],
@@ -345,7 +345,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.UpdateGSTReturnStatusRequest"
+                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.UpdateGstReturnStatusRequest"
                         }
                     }
                 ],
@@ -389,6 +389,58 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Version",
                         "name": "version",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Failed",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v{version}/mocks/{filename}/{prop}": {
+            "get": {
+                "description": "Mock data endpoint",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Mock"
+                ],
+                "summary": "Mock data",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Version",
+                        "name": "version",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "File name",
+                        "name": "filename",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Property name",
+                        "name": "prop",
                         "in": "path",
                         "required": true
                     }
@@ -681,38 +733,17 @@ const docTemplate = `{
                 "GSTR9"
             ]
         },
-        "github_com_jaganathanb_dapps-api_api_dto.CreateGSTRequest": {
+        "github_com_jaganathanb_dapps-api_api_dto.CreateGstsRequest": {
             "type": "object",
             "required": [
-                "gstin"
+                "gstins"
             ],
             "properties": {
-                "address": {
-                    "type": "string",
-                    "maxLength": 128
-                },
-                "gstStatuses": {
+                "gstins": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.GSTStatus"
+                        "type": "string"
                     }
-                },
-                "gstin": {
-                    "type": "string",
-                    "maxLength": 15
-                },
-                "locked": {
-                    "type": "boolean"
-                },
-                "mobileNumber": {
-                    "type": "string",
-                    "maxLength": 10
-                },
-                "registrationDate": {
-                    "type": "string"
-                },
-                "tradeName": {
-                    "type": "string"
                 }
             }
         },
@@ -735,29 +766,6 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_jaganathanb_dapps-api_api_dto.GSTStatus": {
-            "type": "object",
-            "properties": {
-                "filedDate": {
-                    "type": "string"
-                },
-                "gstRType": {
-                    "$ref": "#/definitions/constants.GstReturnType"
-                },
-                "notes": {
-                    "type": "string"
-                },
-                "pendingReturns": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "integer"
-                },
-                "taxPeriod": {
-                    "type": "string"
-                }
-            }
-        },
         "github_com_jaganathanb_dapps-api_api_dto.GetGstResponse": {
             "type": "object",
             "required": [
@@ -771,7 +779,7 @@ const docTemplate = `{
                 "gstStatuses": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.GSTStatus"
+                        "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.GstStatus"
                     }
                 },
                 "gstin": {
@@ -803,6 +811,29 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 11,
                     "minLength": 11
+                }
+            }
+        },
+        "github_com_jaganathanb_dapps-api_api_dto.GstStatus": {
+            "type": "object",
+            "properties": {
+                "filedDate": {
+                    "type": "string"
+                },
+                "gstRType": {
+                    "$ref": "#/definitions/constants.GstReturnType"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "pendingReturns": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "taxPeriod": {
+                    "type": "string"
                 }
             }
         },
@@ -933,7 +964,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_jaganathanb_dapps-api_api_dto.UpdateGSTReturnStatusRequest": {
+        "github_com_jaganathanb_dapps-api_api_dto.UpdateGstReturnStatusRequest": {
             "type": "object",
             "required": [
                 "gstin"
@@ -942,7 +973,7 @@ const docTemplate = `{
                 "gstStatuses": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.GSTStatus"
+                        "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.GstStatus"
                     }
                 },
                 "gstin": {

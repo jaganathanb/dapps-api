@@ -3,7 +3,7 @@ package helper
 import (
 	"net/http"
 
-	"github.com/jaganathanb/dapps-api/pkg/service_errors"
+	service_errors "github.com/jaganathanb/dapps-api/pkg/service-errors"
 )
 
 var StatusCodeMapping = map[string]int{

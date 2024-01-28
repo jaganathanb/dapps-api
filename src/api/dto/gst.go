@@ -6,33 +6,39 @@ import (
 	"github.com/jaganathanb/dapps-api/constants"
 )
 
-type CreateGSTRequest struct {
+type CreateGstRequest struct {
 	Gstin            string      `json:"gstin" binding:"required,max=15"`
 	TradeName        string      `json:"tradeName"`
 	RegistrationDate time.Time   `json:"registrationDate"`
 	Locked           bool        `json:"locked"`
 	MobileNumber     string      `json:"mobileNumber" binding:"max=10"`
 	Address          string      `json:"address" binding:"max=128"`
-	GSTStatuses      []GSTStatus `json:"gstStatuses"`
+	GstStatuses      []GstStatus `json:"gstStatuses"`
 }
 
-type GetGstResponse = CreateGSTRequest
+type CreateGstsRequest struct {
+	Gstins []string `json:"gstins" binding:"required"`
+}
 
-type UpdateGSTReturnStatusRequest struct {
+type GetGstResponse = CreateGstRequest
+
+type GetGstsResponse = []GetGstResponse
+
+type UpdateGstReturnStatusRequest struct {
 	Gstin       string      `json:"gstin" binding:"required,max=15"`
-	GSTStatuses []GSTStatus `json:"gstStatuses"`
+	GstStatuses []GstStatus `json:"gstStatuses"`
 }
 
-type LockGSTRequest struct {
+type LockGstRequest struct {
 	Gstin  string `json:"gstin" binding:"required,max=15"`
 	Locked bool   `json:"locked"`
 }
 
-type RemoveGSTRequest struct {
+type RemoveGstRequest struct {
 	Gstin string `json:"gstin" binding:"required,max=15"`
 }
 
-type GSTStatus struct {
+type GstStatus struct {
 	GstRType       constants.GstReturnType
 	Status         constants.GstReturnStatus
 	FiledDate      time.Time

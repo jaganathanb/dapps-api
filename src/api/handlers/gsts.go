@@ -36,21 +36,21 @@ func (h *GstsHandler) GetGsts(c *gin.Context) {
 	GetByFilter(c, h.service.GetByFilter)
 }
 
-// CreateGst godoc
-// @Summary Creates GST
-// @Description Create a GST entry into the system
+// CreateGsts godoc
+// @Summary Creates GSTs
+// @Description Create GST entries into the system
 // @Tags GSTs
 // @Accept  json
 // @Produce  json
 // @Security AuthBearer
 // @Param version path int true "Version" Enums(1, 2) default(1)
-// @Param Request body dto.CreateGSTRequest true "CreateGSTRequest"
+// @Param Request body dto.CreateGstsRequest true "CreateGstsRequest"
 // @Success 201 {object} helper.BaseHttpResponse "Success"
 // @Failure 400 {object} helper.BaseHttpResponse "Failed"
 // @Failure 409 {object} helper.BaseHttpResponse "Failed"
 // @Router /v{version}/gsts [post]
-func (h *GstsHandler) CreateGst(c *gin.Context) {
-	req := new(dto.CreateGSTRequest)
+func (h *GstsHandler) CreateGsts(c *gin.Context) {
+	req := new(dto.CreateGstsRequest)
 	err := c.ShouldBindJSON(&req)
 
 	if err != nil {
@@ -58,7 +58,7 @@ func (h *GstsHandler) CreateGst(c *gin.Context) {
 			helper.GenerateBaseResponseWithValidationError(nil, false, helper.ValidationError, err))
 		return
 	}
-	err = h.service.CreateGst(req)
+	err = h.service.CreateGsts(req)
 	if err != nil {
 		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(err),
 			helper.GenerateBaseResponseWithError(nil, false, helper.InternalError, err))
@@ -77,7 +77,7 @@ func (h *GstsHandler) CreateGst(c *gin.Context) {
 // @Security AuthBearer
 // @Param version path int true "Version" Enums(1, 2) default(1)
 // @Param gstin path string true "Gstin"
-// @Param Request body dto.UpdateGSTReturnStatusRequest true "UpdateGstStatuses"
+// @Param Request body dto.UpdateGstReturnStatusRequest true "UpdateGstStatuses"
 // @Success 201 {object} helper.BaseHttpResponse "Success"
 // @Failure 400 {object} helper.BaseHttpResponse "Failed"
 // @Failure 409 {object} helper.BaseHttpResponse "Failed"
@@ -90,7 +90,7 @@ func (h *GstsHandler) UpdateGstStatuses(c *gin.Context) {
 		return
 	}
 
-	req := new(dto.UpdateGSTReturnStatusRequest)
+	req := new(dto.UpdateGstReturnStatusRequest)
 	req.Gstin = gstin
 	err := c.ShouldBindJSON(&req)
 
