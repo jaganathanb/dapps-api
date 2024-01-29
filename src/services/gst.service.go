@@ -67,17 +67,25 @@ func (s *GstService) CreateGsts(req *dto.CreateGstsRequest) error {
 
 	res, _ := httpwrapper.AsyncHTTP[models.Gst](reqs)
 
-	tx := s.base.Database.Begin()
-	for _, v := range res {
-		err = tx.Create(&v).Error
-		if err != nil {
-			tx.Rollback()
-			s.base.Logger.Error(logging.Sqlite3, logging.Rollback, err.Error(), nil)
-			return err
+	if len(res) > 0 {
+		tx := s.base.Database.Begin()
+
+		for _, v := range res {
+			if v.Error != nil {
+				s.base.Logger.Error(logging.Sqlite3, logging.Rollback, v.Error.Error(), nil)
+			} else {
+				err = tx.Create(&v.Resonse).Error
+				if err != nil {
+					tx.Rollback()
+					s.base.Logger.Error(logging.Sqlite3, logging.Rollback, err.Error(), nil)
+					return err
+				}
+			}
 		}
+
+		tx.Commit()
 	}
 
-	tx.Commit()
 	return nil
 }
 

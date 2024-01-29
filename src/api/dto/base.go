@@ -32,3 +32,8 @@ type FileResponse struct {
 	Description string `json:"description"`
 	MimeType    string `json:"mimeType"`
 }
+
+type HttpResonseWrapper[T any] struct {
+	Resonse *T
+	Error   error
+}

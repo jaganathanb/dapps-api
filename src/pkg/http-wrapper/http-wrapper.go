@@ -2,10 +2,13 @@ package httpwrapper
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"sync"
 
+	"github.com/jaganathanb/dapps-api/api/dto"
 	"github.com/jaganathanb/dapps-api/config"
 	"github.com/jaganathanb/dapps-api/pkg/logging"
 )
@@ -13,29 +16,47 @@ import (
 var log = logging.NewLogger(config.GetConfig())
 var client = http.Client{}
 
-func makeCall[R any](req *http.Request, ch chan<- R, wg *sync.WaitGroup) {
+func makeCall[T any](req *http.Request, ch chan<- dto.HttpResonseWrapper[T], wg *sync.WaitGroup) {
 	defer wg.Done()
+
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Error(logging.Category(logging.ExternalService), logging.SubCategory(logging.RequestResponse), err.Error(), nil)
+
+		ch <- dto.HttpResonseWrapper[T]{Resonse: nil, Error: err}
+		return
 	}
 
 	defer resp.Body.Close()
 
 	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Error(logging.Category(logging.ExternalService), logging.SubCategory(logging.RequestResponse), err.Error(), nil)
+	if resp.StatusCode == 201 || resp.StatusCode == 200 {
+		if err != nil {
+			log.Error(logging.Category(logging.ExternalService), logging.SubCategory(logging.RequestResponse), err.Error(), nil)
+
+			ch <- dto.HttpResonseWrapper[T]{Resonse: nil, Error: err}
+			return
+		}
+
+		var res *T
+		err = json.Unmarshal(b, &res)
+
+		if err != nil {
+			log.Error(logging.Category(logging.ExternalService), logging.SubCategory(logging.RequestResponse), err.Error(), nil)
+
+			ch <- dto.HttpResonseWrapper[T]{Resonse: nil, Error: err}
+			return
+		}
+
+		ch <- dto.HttpResonseWrapper[T]{Resonse: res, Error: nil}
+	} else {
+		ch <- dto.HttpResonseWrapper[T]{Resonse: nil, Error: errors.New(fmt.Sprintf("HTTP Error %d. Error: %s", resp.StatusCode, b))}
 	}
-
-	var res R
-	json.Unmarshal(b, &res)
-
-	ch <- R(res)
 }
 
-func AsyncHTTP[R any](reqs []http.Request) ([]R, error) {
-	ch := make(chan R)
-	var responses []R
+func AsyncHTTP[T any](reqs []http.Request) ([]dto.HttpResonseWrapper[T], error) {
+	ch := make(chan dto.HttpResonseWrapper[T])
+	var responses []dto.HttpResonseWrapper[T]
 	var wg sync.WaitGroup
 
 	for _, req := range reqs {

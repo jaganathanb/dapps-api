@@ -8,26 +8,31 @@ import (
 
 type Gst struct {
 	BaseModel
-	Gstin            string    `json:"gstin"`
-	Name             string    `json:"name"`
-	Tradename        string    `json:"tradename"`
-	RegistrationDate string    `json:"registrationDate"`
-	Center           string    `json:"center"`
-	State            string    `json:"state"`
-	CenterCd         string    `json:"center_cd"`
-	StateCd          string    `json:"state_cd"`
-	Constitution     string    `json:"constitution"`
-	Type             string    `json:"type"`
-	Status           string    `json:"status"`
-	LastUpdateDate   time.Time `json:"lastUpdateDate"`
-	CancellationDate time.Time `json:"cancellationDate"`
-	Nature           []string  `json:"nature"`
-	EinvoiceStatus   string    `json:"einvoiceStatus"`
-	Adadr            []string  `json:"adadr"`
-	Pradr            PAddress  `json:"pradr"`
+	Gstin            string      `json:"gstin"`
+	Name             string      `json:"name"`
+	Tradename        string      `json:"tradename"`
+	RegistrationDate string      `json:"registrationDate"`
+	Center           string      `json:"center"`
+	State            string      `json:"state"`
+	CenterCd         string      `json:"center_cd"`
+	StateCd          string      `json:"state_cd"`
+	Constitution     string      `json:"constitution"`
+	Type             string      `json:"type"`
+	Status           string      `json:"status"`
+	LastUpdateDate   time.Time   `json:"lastUpdateDate"`
+	CancellationDate time.Time   `json:"cancellationDate"`
+	Nature           string      `json:"nature"`
+	EinvoiceStatus   string      `json:"einvoiceStatus"`
+	Adadr            string      `json:"adadr"`
+	Locked           bool        `gorm:"type:bool;default:false"`
+	MobileNumber     string      `gorm:"type:string;size:10;null;default:null"`
+	GstStatuses      []GstStatus `gorm:"foreignKey:Gstin;references:Gstin"`
+	Pradr            PAddress    `gorm:"foreignKey:Gstin;references:Gstin"`
 }
 
 type PAddress struct {
+	BaseModel
+	Gstin      string `json:"gstin"`
 	Bnm        string `json:"bnm"`
 	St         string `json:"st"`
 	Loc        string `json:"loc"`
