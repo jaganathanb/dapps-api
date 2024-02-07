@@ -8,11 +8,13 @@ import (
 
 	"github.com/jaganathanb/dapps-api/api/dto"
 	"github.com/jaganathanb/dapps-api/config"
+	"github.com/jaganathanb/dapps-api/constants"
 	"github.com/jaganathanb/dapps-api/data/db"
 	"github.com/jaganathanb/dapps-api/data/models"
 	httpwrapper "github.com/jaganathanb/dapps-api/pkg/http-wrapper"
 	"github.com/jaganathanb/dapps-api/pkg/logging"
 	service_errors "github.com/jaganathanb/dapps-api/pkg/service-errors"
+	"github.com/samber/lo"
 	"gorm.io/gorm"
 )
 
@@ -35,10 +37,10 @@ func NewGstService(cfg *config.Config) *GstService {
 	}
 }
 
-func (s *GstService) CreateGsts(req *dto.CreateGstsRequest) error {
+func (s *GstService) CreateGsts(req *dto.CreateGstsRequest) (string, error) {
 	exists, err := s.getExistingGstsInSystem(req.Gstins)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	var reqs []http.Request
@@ -50,7 +52,7 @@ func (s *GstService) CreateGsts(req *dto.CreateGstsRequest) error {
 			if s.base.Config.Server.RunMode == "release" {
 				url = fmt.Sprintf("https://taxpayer.irisgst.com/api/search?gstin=%s", v)
 			} else {
-				url = fmt.Sprintf("http://localhost:%s/api/mocks/gsts/%s", s.base.Config.Server.ExternalPort, v)
+				url = fmt.Sprintf("http://localhost:%s/api/v%d/mocks/gsts/%s", s.base.Config.Server.ExternalPort, constants.Version, v)
 			}
 			req, err := http.NewRequest(http.MethodGet, url, nil)
 			if err != nil {
@@ -62,23 +64,25 @@ func (s *GstService) CreateGsts(req *dto.CreateGstsRequest) error {
 	}
 
 	if len(reqs) == 0 {
-		return nil
+		s.base.Logger.Warn(logging.Sqlite3, logging.Insert, fmt.Sprintf(service_errors.GstsExists, req.Gstins), nil)
+
+		return "No gst entered into tothe system", nil
 	}
 
 	res, _ := httpwrapper.AsyncHTTP[models.Gst](reqs)
 
-	if len(res) > 0 {
+	if len(res) > 0 && lo.SomeBy(res, func(r dto.HttpResonseWrapper[models.Gst]) bool { return r.Data != nil }) {
 		tx := s.base.Database.Begin()
 
 		for _, v := range res {
 			if v.Error != nil {
 				s.base.Logger.Error(logging.Sqlite3, logging.Rollback, v.Error.Error(), nil)
 			} else {
-				err = tx.Create(&v.Resonse).Error
+				err = tx.Create(&v.Data.Result).Error
 				if err != nil {
 					tx.Rollback()
 					s.base.Logger.Error(logging.Sqlite3, logging.Rollback, err.Error(), nil)
-					return err
+					return "", err
 				}
 			}
 		}
@@ -86,7 +90,7 @@ func (s *GstService) CreateGsts(req *dto.CreateGstsRequest) error {
 		tx.Commit()
 	}
 
-	return nil
+	return fmt.Sprintf("%s gst details already exists. %d gst details entered into the system.", exists, len(res)), nil
 }
 
 func (s *GstService) GetByFilter(ctx context.Context, req *dto.PaginationInputWithFilter) (*dto.PagedList[dto.GetGstResponse], error) {

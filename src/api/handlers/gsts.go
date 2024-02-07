@@ -58,14 +58,14 @@ func (h *GstsHandler) CreateGsts(c *gin.Context) {
 			helper.GenerateBaseResponseWithValidationError(nil, false, helper.ValidationError, err))
 		return
 	}
-	err = h.service.CreateGsts(req)
+	msg, err := h.service.CreateGsts(req)
 	if err != nil {
 		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(err),
 			helper.GenerateBaseResponseWithValidationError(nil, false, helper.ValidationError, err))
 		return
 	}
 
-	c.JSON(http.StatusCreated, helper.GenerateBaseResponse(nil, true, helper.Success))
+	c.JSON(http.StatusCreated, helper.GenerateBaseResponse(msg, true, helper.Success))
 }
 
 // UpdateGstStatuses godoc

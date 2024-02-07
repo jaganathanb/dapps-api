@@ -10,20 +10,27 @@ import (
 
 	"github.com/jaganathanb/dapps-api/api/dto"
 	"github.com/jaganathanb/dapps-api/config"
+	"github.com/jaganathanb/dapps-api/data/models"
 	"github.com/jaganathanb/dapps-api/pkg/logging"
 )
+
+type GST = models.Gst
+
+type HttpResult interface {
+	GST
+}
 
 var log = logging.NewLogger(config.GetConfig())
 var client = http.Client{}
 
-func makeCall[T any](req *http.Request, ch chan<- dto.HttpResonseWrapper[T], wg *sync.WaitGroup) {
+func makeCall[T HttpResult](req *http.Request, ch chan<- dto.HttpResonseWrapper[T], wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Error(logging.Category(logging.ExternalService), logging.SubCategory(logging.RequestResponse), err.Error(), nil)
 
-		ch <- dto.HttpResonseWrapper[T]{Resonse: nil, Error: err}
+		ch <- dto.HttpResonseWrapper[T]{Data: nil, Error: err}
 		return
 	}
 
@@ -34,27 +41,37 @@ func makeCall[T any](req *http.Request, ch chan<- dto.HttpResonseWrapper[T], wg 
 		if err != nil {
 			log.Error(logging.Category(logging.ExternalService), logging.SubCategory(logging.RequestResponse), err.Error(), nil)
 
-			ch <- dto.HttpResonseWrapper[T]{Resonse: nil, Error: err}
+			ch <- dto.HttpResonseWrapper[T]{Data: nil, Error: err}
 			return
 		}
 
-		var res *T
-		err = json.Unmarshal(b, &res)
+		res := new(dto.HttpResponseResult[T])
+		err := json.Unmarshal(b, &res)
 
 		if err != nil {
 			log.Error(logging.Category(logging.ExternalService), logging.SubCategory(logging.RequestResponse), err.Error(), nil)
 
-			ch <- dto.HttpResonseWrapper[T]{Resonse: nil, Error: err}
+			ch <- dto.HttpResonseWrapper[T]{Data: nil, Error: err}
 			return
 		}
 
-		ch <- dto.HttpResonseWrapper[T]{Resonse: res, Error: nil}
+		// result := res["result"].(map[string]interface{})
+		// resData, ok := result.(*T)
+
+		// if ok {
+		// 	fmt.Printf("%v", resData)
+		// }
+
+		//t := new(T)
+		//obj := any(t).(*T)
+
+		ch <- dto.HttpResonseWrapper[T]{Data: &dto.HttpResponseResult[T]{Result: res.Result}}
 	} else {
-		ch <- dto.HttpResonseWrapper[T]{Resonse: nil, Error: errors.New(fmt.Sprintf("HTTP Error %d. Error: %s", resp.StatusCode, b))}
+		ch <- dto.HttpResonseWrapper[T]{Data: nil, Error: errors.New(fmt.Sprintf("HTTP Error %d for the url %s. Error: %s", resp.StatusCode, req.URL.String(), b))}
 	}
 }
 
-func AsyncHTTP[T any](reqs []http.Request) ([]dto.HttpResonseWrapper[T], error) {
+func AsyncHTTP[T HttpResult](reqs []http.Request) ([]dto.HttpResonseWrapper[T], error) {
 	ch := make(chan dto.HttpResonseWrapper[T])
 	var responses []dto.HttpResonseWrapper[T]
 	var wg sync.WaitGroup

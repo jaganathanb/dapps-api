@@ -24,4 +24,5 @@ const (
 	// GST
 	GstNotFound = "GST %s does not exists in the system"
 	GstExists   = "GST %s already exists in the system"
+	GstsExists  = "GSTs %s already exists in the system"
 )

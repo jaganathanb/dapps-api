@@ -17,6 +17,9 @@ const (
 	MobileNumberKey        string = "MobileNumber"
 	RolesKey               string = "Roles"
 	ExpireTimeKey          string = "Exp"
+
+	// API
+	Version uint = 1
 )
 
 type GstReturnType int

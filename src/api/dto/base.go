@@ -34,6 +34,14 @@ type FileResponse struct {
 }
 
 type HttpResonseWrapper[T any] struct {
-	Resonse *T
-	Error   error
+	Data  *HttpResponseResult[T]
+	Error error
+}
+
+type HttpResponseResult[T any] struct {
+	Result *T
+}
+
+type HttpResponseResultData[T any] struct {
+	Data *T
 }

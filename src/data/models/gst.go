@@ -4,30 +4,31 @@ import (
 	"time"
 
 	"github.com/jaganathanb/dapps-api/constants"
+	sqlite_array "github.com/jaganathanb/dapps-api/pkg/sqlite-array-type"
 )
 
 type Gst struct {
 	BaseModel
-	Gstin            string      `json:"gstin"`
-	Name             string      `json:"name"`
-	Tradename        string      `json:"tradename"`
-	RegistrationDate string      `json:"registrationDate"`
-	Center           string      `json:"center"`
-	State            string      `json:"state"`
-	CenterCd         string      `json:"center_cd"`
-	StateCd          string      `json:"state_cd"`
-	Constitution     string      `json:"constitution"`
-	Type             string      `json:"type"`
-	Status           string      `json:"status"`
-	LastUpdateDate   time.Time   `json:"lastUpdateDate"`
-	CancellationDate time.Time   `json:"cancellationDate"`
-	Nature           string      `json:"nature"`
-	EinvoiceStatus   string      `json:"einvoiceStatus"`
-	Adadr            string      `json:"adadr"`
-	Locked           bool        `gorm:"type:bool;default:false"`
-	MobileNumber     string      `gorm:"type:string;size:10;null;default:null"`
-	GstStatuses      []GstStatus `gorm:"foreignKey:Gstin;references:Gstin"`
-	Pradr            PAddress    `gorm:"foreignKey:Gstin;references:Gstin"`
+	Gstin            string                      `json:"gstin"`
+	Name             string                      `json:"name"`
+	Tradename        string                      `json:"tradename"`
+	RegistrationDate string                      `json:"registrationDate"`
+	Center           string                      `json:"center"`
+	State            string                      `json:"state"`
+	CenterCd         string                      `json:"center_cd"`
+	StateCd          string                      `json:"state_cd"`
+	Constitution     string                      `json:"constitution"`
+	Type             string                      `json:"type"`
+	Status           string                      `json:"status"`
+	LastUpdateDate   time.Time                   `json:"lastUpdateDate"`
+	CancellationDate time.Time                   `json:"cancellationDate"`
+	Nature           sqlite_array.SqliteStrArray `json:"nature,omitempty;type:text[]"`
+	EinvoiceStatus   string                      `json:"einvoiceStatus"`
+	Adadr            sqlite_array.SqliteStrArray `json:"adadr,omitempty;type:text[]"`
+	Locked           bool                        `gorm:"type:bool;default:false"`
+	MobileNumber     string                      `gorm:"type:string;size:10;null;default:null"`
+	GstStatuses      []GstStatus                 `gorm:"foreignKey:Gstin;references:Gstin"`
+	Pradr            PAddress                    `gorm:"foreignKey:Gstin;references:Gstin"`
 }
 
 type PAddress struct {
