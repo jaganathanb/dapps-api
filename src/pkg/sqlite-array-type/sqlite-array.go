@@ -4,7 +4,6 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
@@ -22,16 +21,25 @@ func (a *SqliteStrArray) Scan(value interface{}) error {
 		return fmt.Errorf("failed to cast value to string: %v", value)
 	}
 
-	err := a.UnmarshalJSON([]byte(s))
+	var val []string
+	err := json.Unmarshal([]byte(s), &val)
+
+	if err == nil {
+		*a = val
+	}
 
 	return err
 }
 
 func (strarr SqliteStrArray) Value() (driver.Value, error) {
 	if strarr != nil {
-		resarr := fmt.Sprintf("[%s]", strings.Join(strarr, ","))
+		resarr, err := json.Marshal(strarr)
 
-		return resarr, nil
+		if err != nil {
+			return nil, err
+		}
+
+		return string(resarr), nil
 	}
 
 	return nil, nil
@@ -51,23 +59,23 @@ func (u *SqliteStrArray) String() string {
 	return val.(string)
 }
 
-func (u SqliteStrArray) MarshalJSON() ([]byte, error) {
-	return json.Marshal(u.String())
-}
+// func (u SqliteStrArray) MarshalJSON() ([]byte, error) {
+// 	return json.Marshal(u.String())
+// }
 
-func (u *SqliteStrArray) UnmarshalJSON(data []byte) error {
-	// ignore null
-	if string(data) == "null" {
-		return nil
-	}
+// func (u *SqliteStrArray) UnmarshalJSON(data []byte) error {
+// 	// ignore null
+// 	if string(data) == "null" {
+// 		return nil
+// 	}
 
-	uu := string(data)
+// 	uu := string(data)
 
-	if uu == "[]" {
-		*u = SqliteStrArray{}
-	} else {
-		_ = json.Unmarshal(data, &u)
-	}
+// 	if uu == "[]" {
+// 		*u = SqliteStrArray{}
+// 	} else {
+// 		_ = json.Unmarshal(data, &u)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }

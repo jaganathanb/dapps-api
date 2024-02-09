@@ -30,7 +30,7 @@ func NewGstService(cfg *config.Config) *GstService {
 			Logger:   logging.NewLogger(cfg),
 			Preloads: []preload{
 				{string: "GstStatuses"},
-				{string: "PAddress"},
+				{string: "Pradr"},
 			},
 			Config: cfg,
 		},
