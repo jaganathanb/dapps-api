@@ -1,95 +1,125 @@
 package httpwrapper
 
 import (
+	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"runtime"
 	"sync"
 
 	"github.com/jaganathanb/dapps-api/api/dto"
-	"github.com/jaganathanb/dapps-api/config"
-	"github.com/jaganathanb/dapps-api/data/models"
-	"github.com/jaganathanb/dapps-api/pkg/logging"
 )
 
-type GST = models.Gst
-
-type HttpResult interface {
-	GST
+// HTTPClient represents the HTTP client wrapper
+type HTTPClient struct {
+	client *http.Client
 }
 
-var log = logging.NewLogger(config.GetConfig())
-var client = http.Client{}
-
-func makeCall[T HttpResult](req *http.Request, ch chan<- dto.HttpResonseWrapper[T], wg *sync.WaitGroup) {
-	defer wg.Done()
-
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Error(logging.Category(logging.ExternalService), logging.SubCategory(logging.RequestResponse), err.Error(), nil)
-
-		ch <- dto.HttpResonseWrapper[T]{Data: nil, Error: err}
-		return
-	}
-
-	defer resp.Body.Close()
-
-	b, err := io.ReadAll(resp.Body)
-	if resp.StatusCode == 201 || resp.StatusCode == 200 {
-		if err != nil {
-			log.Error(logging.Category(logging.ExternalService), logging.SubCategory(logging.RequestResponse), err.Error(), nil)
-
-			ch <- dto.HttpResonseWrapper[T]{Data: nil, Error: err}
-			return
-		}
-
-		res := new(dto.HttpResponseResult[T])
-		err := json.Unmarshal(b, &res)
-
-		if err != nil {
-			log.Error(logging.Category(logging.ExternalService), logging.SubCategory(logging.RequestResponse), err.Error(), nil)
-
-			ch <- dto.HttpResonseWrapper[T]{Data: nil, Error: err}
-			return
-		}
-
-		// result := res["result"].(map[string]interface{})
-		// resData, ok := result.(*T)
-
-		// if ok {
-		// 	fmt.Printf("%v", resData)
-		// }
-
-		//t := new(T)
-		//obj := any(t).(*T)
-
-		ch <- dto.HttpResonseWrapper[T]{Data: &dto.HttpResponseResult[T]{Result: res.Result}}
-	} else {
-		ch <- dto.HttpResonseWrapper[T]{Data: nil, Error: errors.New(fmt.Sprintf("HTTP Error %d for the url %s. Error: %s", resp.StatusCode, req.URL.String(), b))}
+// NewHTTPClient creates a new HTTPClient instance
+func NewHTTPClient() *HTTPClient {
+	return &HTTPClient{
+		client: &http.Client{},
 	}
 }
 
-func AsyncHTTP[T HttpResult](reqs []http.Request) ([]dto.HttpResonseWrapper[T], error) {
-	ch := make(chan dto.HttpResonseWrapper[T])
-	var responses []dto.HttpResonseWrapper[T]
+// MakeRequests sends concurrent requests and returns a channel to receive responses
+func (c *HTTPClient) MakeRequests(requests []dto.HttpRequestConfig) []dto.HttpResponseWrapper {
+	responses := c.doRequests(requests)
+
+	resps := []dto.HttpResponseWrapper{}
+	// Process responses
+	for response := range responses {
+		if response.Err != nil {
+			fmt.Println("Error:", response.Err)
+			resps = append(resps, response)
+			continue
+		}
+
+		resps = append(resps, response)
+	}
+
+	return resps
+}
+
+func (c *HTTPClient) doRequests(requests []dto.HttpRequestConfig) <-chan dto.HttpResponseWrapper {
 	var wg sync.WaitGroup
 
-	for _, req := range reqs {
+	numCPU := runtime.NumCPU()
+	runtime.GOMAXPROCS(numCPU)
+
+	maxConcurrency := 2 * numCPU
+
+	resultChan := make(chan dto.HttpResponseWrapper, len(requests))
+	requestChan := make(chan dto.HttpRequestConfig, len(requests))
+
+	for i := 0; i < maxConcurrency; i++ {
 		wg.Add(1)
-		go makeCall(&req, ch, &wg)
+		go func() {
+			defer wg.Done()
+			for req := range requestChan {
+				resultChan <- c.doRequest(req)
+			}
+		}()
 	}
 
-	// close the channel in the background
+	go func() {
+		defer close(requestChan)
+		for _, req := range requests {
+			requestChan <- req
+		}
+	}()
+
 	go func() {
 		wg.Wait()
-		close(ch)
+		close(resultChan)
 	}()
-	// read from channel as they come in until its closed
-	for res := range ch {
-		responses = append(responses, res)
+
+	return resultChan
+}
+
+// doRequest sends an HTTP request based on the provided method
+func (c *HTTPClient) doRequest(config dto.HttpRequestConfig) dto.HttpResponseWrapper {
+	var bodyBytes []byte
+	if config.Body != nil {
+		var err error
+		bodyBytes, err = json.Marshal(config.Body)
+		if err != nil {
+			return dto.HttpResponseWrapper{Err: err, RequestID: config.RequestID}
+		}
 	}
 
-	return responses, nil
+	req, err := http.NewRequest(config.Method, config.URL, bytes.NewBuffer(bodyBytes))
+	if err != nil {
+		return dto.HttpResponseWrapper{Err: err, RequestID: config.RequestID}
+	}
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return dto.HttpResponseWrapper{Err: err, RequestID: config.RequestID}
+	}
+
+	if resp.StatusCode != 200 && resp.StatusCode != 201 {
+		return dto.HttpResponseWrapper{Err: fmt.Errorf(resp.Status), RequestID: config.RequestID}
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return dto.HttpResponseWrapper{Err: err, RequestID: config.RequestID}
+	}
+
+	var responseBody any
+	if config.ResponseType != nil {
+		err := json.Unmarshal(body, config.ResponseType)
+		if err != nil {
+			return dto.HttpResponseWrapper{Err: err, RequestID: config.RequestID}
+		}
+		responseBody = config.ResponseType
+	} else {
+		responseBody = body
+	}
+
+	return dto.HttpResponseWrapper{StatusCode: resp.StatusCode, RequestID: config.RequestID, Body: responseBody, ResponseType: config.ResponseType}
 }

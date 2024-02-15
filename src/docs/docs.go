@@ -726,15 +726,15 @@ const docTemplate = `{
             }
         },
         "constants.GstReturnType": {
-            "type": "integer",
+            "type": "string",
             "enum": [
-                0,
-                1,
-                2
+                "GSTR1",
+                "GSTR3B",
+                "GSTR9"
             ],
             "x-enum-varnames": [
                 "GSTR1",
-                "GSTR2B",
+                "GSTR3B",
                 "GSTR9"
             ]
         },
@@ -831,10 +831,13 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "pendingReturns": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "status": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "taxPeriod": {
                     "type": "string"

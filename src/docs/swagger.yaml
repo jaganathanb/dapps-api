@@ -20,13 +20,13 @@ definitions:
     type: object
   constants.GstReturnType:
     enum:
-    - 0
-    - 1
-    - 2
-    type: integer
+    - GSTR1
+    - GSTR3B
+    - GSTR9
+    type: string
     x-enum-varnames:
     - GSTR1
-    - GSTR2B
+    - GSTR3B
     - GSTR9
   github_com_jaganathanb_dapps-api_api_dto.CreateGstsRequest:
     properties:
@@ -92,9 +92,11 @@ definitions:
       notes:
         type: string
       pendingReturns:
-        type: string
+        items:
+          type: string
+        type: array
       status:
-        type: integer
+        type: string
       taxPeriod:
         type: string
     type: object

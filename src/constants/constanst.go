@@ -22,19 +22,19 @@ const (
 	Version uint = 1
 )
 
-type GstReturnType int
+type GstReturnType string
 
 const (
-	GSTR1  GstReturnType = 0
-	GSTR2B GstReturnType = 1
-	GSTR9  GstReturnType = 2
+	GSTR1  GstReturnType = "GSTR1"
+	GSTR3B GstReturnType = "GSTR3B"
+	GSTR9  GstReturnType = "GSTR9"
 )
 
-type GstReturnStatus int
+type GstReturnStatus string
 
 const (
-	INVOICE_CALL     = 0
-	INVOICE_RECEIVED = 1
-	INVOICE_ENTRY    = 2
-	FILED            = 3
+	InvoiceCall     = "InvoiceCall"
+	InvoiceReceived = "InvoiceReceived"
+	InvoiceEntry    = "InvoiceEntry"
+	Filed           = "Filed"
 )

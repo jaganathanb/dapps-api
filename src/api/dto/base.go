@@ -33,15 +33,24 @@ type FileResponse struct {
 	MimeType    string `json:"mimeType"`
 }
 
-type HttpResonseWrapper[T any] struct {
-	Data  *HttpResponseResult[T]
-	Error error
+// HttpRequestConfig represents the configuration for each request
+type HttpRequestConfig struct {
+	Method       string
+	URL          string
+	Body         any
+	ResponseType any
+	RequestID    string
+}
+
+// Response represents the structure of the HTTP response
+type HttpResponseWrapper struct {
+	StatusCode   int
+	Body         any
+	Err          error
+	ResponseType any
+	RequestID    string
 }
 
 type HttpResponseResult[T any] struct {
-	Result *T
-}
-
-type HttpResponseResultData[T any] struct {
-	Data *T
+	Result T `json:"result"`
 }

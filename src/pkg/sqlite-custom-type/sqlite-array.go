@@ -1,4 +1,4 @@
-package sqlite_array
+package sqlite_custom_type
 
 import (
 	"database/sql/driver"

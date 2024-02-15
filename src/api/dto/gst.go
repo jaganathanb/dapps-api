@@ -51,8 +51,8 @@ type Gst struct {
 type GstStatus struct {
 	GstRType       constants.GstReturnType
 	Status         constants.GstReturnStatus
-	FiledDate      time.Time
-	PendingReturns string
+	FiledDate      string
+	PendingReturns []string
 	TaxPeriod      string
 	Notes          string
 }
