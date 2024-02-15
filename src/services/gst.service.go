@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
+	"time"
 
 	"github.com/jaganathanb/dapps-api/api/dto"
 	"github.com/jaganathanb/dapps-api/config"
@@ -14,6 +15,7 @@ import (
 	httpwrapper "github.com/jaganathanb/dapps-api/pkg/http-wrapper"
 	"github.com/jaganathanb/dapps-api/pkg/logging"
 	service_errors "github.com/jaganathanb/dapps-api/pkg/service-errors"
+	"github.com/jaganathanb/dapps-api/pkg/utils"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
 )
@@ -68,14 +70,28 @@ func (s *GstService) CreateGsts(req *dto.CreateGstsRequest) (string, error) {
 		responses := client.MakeRequests(req)
 
 		// Process responses
-		s.newMethod(responses)
+		gsts := processResponses(responses)
+
+		tx := s.base.Database.Begin()
+
+		for _, gst := range gsts {
+			err = tx.Create(&gst).Error
+			if err != nil {
+				tx.Rollback()
+				s.base.Logger.Error(logging.Sqlite3, logging.Rollback, err.Error(), nil)
+				return "", err
+			}
+		}
+
+		tx.Commit()
 	}
 
-	return fmt.Sprintf("%s gst details already exists. %d gst details entered into the system.", exists, 2), nil
+	return fmt.Sprintf("%s gst details already exists. %d gst details entered into the system.", exists, len(reqs)), nil
 }
 
-func (*GstService) newMethod(responses []dto.HttpResponseWrapper) {
+func processResponses(responses []dto.HttpResponseWrapper) []models.Gst {
 	grouped := lo.GroupBy(responses, func(res dto.HttpResponseWrapper) string { return res.RequestID })
+	gsts := []models.Gst{}
 
 	for _, resps := range grouped {
 		respsWithoutErr := lo.Filter(resps, func(res dto.HttpResponseWrapper, i int) bool { return res.Err == nil })
@@ -85,21 +101,102 @@ func (*GstService) newMethod(responses []dto.HttpResponseWrapper) {
 			var returns []models.GstStatus
 			for _, res := range resps {
 				switch res.ResponseType.(type) {
-				case *models.Gst:
-					if rType, ok := res.Body.(*models.Gst); ok {
-						gst = *rType
+				case *dto.HttpResponseResult[models.Gst]:
+					if rType, ok := res.Body.(*dto.HttpResponseResult[models.Gst]); ok {
+						gst = *&rType.Result
 					}
-				case *[]models.GstStatus:
-					if rType, ok := res.Body.(*[]models.GstStatus); ok {
-						returns = *rType
+				case *dto.HttpResponseResult[[]models.GstStatus]:
+					if rType, ok := res.Body.(*dto.HttpResponseResult[[]models.GstStatus]); ok {
+						returns = *&rType.Result
 					}
 				}
 			}
-			fmt.Println(gst)
-			fmt.Println(returns)
+
+			if gst.Gstin != "" {
+				gst.GstStatuses = processGstStatuses(gst.Gstin, returns)
+				gsts = append(gsts, gst)
+			}
+		}
+	}
+
+	return gsts
+}
+
+func processGstStatuses(gstin string, returns []models.GstStatus) []models.GstStatus {
+	returnGroups := lo.GroupBy(returns, func(ret models.GstStatus) constants.GstReturnType { return ret.Rtntype })
+
+	newReturns := []models.GstStatus{}
+	for rty, retn := range returnGroups {
+		newReturns = append(newReturns, getLatestReturnStatus(rty, retn, gstin))
+	}
+
+	return newReturns
+}
+
+func getLatestReturnStatus(gstReturnType constants.GstReturnType, returns []models.GstStatus, gstin string) models.GstStatus {
+	pendings := []string{}
+
+	filed := lo.FilterMap(returns, func(ret models.GstStatus, i int) (models.GstStatus, bool) {
+		return models.GstStatus{Dof: ret.Dof, RetPrd: ret.RetPrd}, ret.Status == constants.Filed
+	})
+
+	slices.SortFunc(filed,
+		func(a, b models.GstStatus) int {
+			dof1, err1 := time.Parse(constants.DOF, a.Dof)
+			dof2, err2 := time.Parse(constants.DOF, b.Dof)
+
+			if err1 == nil && err2 == nil {
+				if dof1.After(dof2) {
+					return -1
+				} else {
+					return 1
+				}
+			}
+
+			return 1
+		})
+
+	lastFiledDate, _ := time.Parse(constants.DOF, filed[0].Dof)
+	lastTaxPeriod, _ := time.Parse(constants.TAXPRD, filed[0].RetPrd)
+
+	years, months, _, _, _, _ := utils.Diff(time.Now(), lastTaxPeriod)
+
+	var pendingCount int
+	var dueDays int
+
+	if gstReturnType == constants.GSTR9 {
+		pendingCount = years
+		dueDays = 21
+	} else {
+		pendingCount = months
+		dueDays = 12
+	}
+
+	newReturnsStatus := models.GstStatus{Gstin: gstin, Rtntype: gstReturnType, Arn: filed[0].Arn, Mof: filed[0].Mof}
+
+	if pendingCount > 0 {
+		for count := range pendingCount {
+			pendings = append(pendings, lastTaxPeriod.AddDate(0, count+1, 0).Format(constants.TAXPRD))
 		}
 
+		newReturnsStatus.Dof = ""
+		newReturnsStatus.RetPrd = lastTaxPeriod.AddDate(0, 1, 0).Format(constants.TAXPRD)
+		newReturnsStatus.Status = constants.InvoiceCall
+	} else {
+		if lastFiledDate.Before(utils.StartOfMonth(time.Now()).AddDate(0, 1, dueDays)) {
+			newReturnsStatus.Dof = filed[0].Dof
+			newReturnsStatus.RetPrd = filed[0].RetPrd
+			newReturnsStatus.Status = constants.Filed
+		} else {
+			newReturnsStatus.Dof = ""
+			newReturnsStatus.RetPrd = lastTaxPeriod.AddDate(0, 1, 0).Format(constants.TAXPRD)
+			newReturnsStatus.Status = constants.InvoiceCall
+		}
 	}
+
+	newReturnsStatus.PendingReturns = pendings
+
+	return newReturnsStatus
 }
 
 func (s *GstService) GetByFilter(ctx context.Context, req *dto.PaginationInputWithFilter) (*dto.PagedList[dto.GetGstResponse], error) {

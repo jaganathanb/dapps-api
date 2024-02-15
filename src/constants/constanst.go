@@ -1,6 +1,11 @@
 package constants
 
 const (
+	DOF    = "02-01-2006"
+	TAXPRD = "012006"
+)
+
+const (
 	// User
 	AdminRoleName      string = "admin"
 	DefaultRoleName    string = "default"
@@ -38,3 +43,11 @@ const (
 	InvoiceEntry    = "InvoiceEntry"
 	Filed           = "Filed"
 )
+
+func (d GstReturnType) String() string {
+	return string(d)
+}
+
+func (d GstReturnStatus) String() string {
+	return string(d)
+}
