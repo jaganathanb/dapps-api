@@ -5,7 +5,7 @@ import validation "github.com/jaganathanb/dapps-api/api/validations"
 type BaseHttpResponse struct {
 	Result           any                           `json:"result"`
 	Success          bool                          `json:"success"`
-	ResultCode       ResultCode                           `json:"resultCode"`
+	ResultCode       ResultCode                    `json:"resultCode"`
 	ValidationErrors *[]validation.ValidationError `json:"validationErrors"`
 	Error            any                           `json:"error"`
 }
@@ -35,9 +35,15 @@ func GenerateBaseResponseWithAnyError(result any, success bool, resultCode Resul
 }
 
 func GenerateBaseResponseWithValidationError(result any, success bool, resultCode ResultCode, err error) *BaseHttpResponse {
-	return &BaseHttpResponse{Result: result,
+	response := &BaseHttpResponse{Result: result,
 		Success:          success,
 		ResultCode:       resultCode,
 		ValidationErrors: validation.GetValidationErrors(err),
 	}
+
+	if response.ValidationErrors == nil {
+		response.Error = err.Error()
+	}
+
+	return response
 }

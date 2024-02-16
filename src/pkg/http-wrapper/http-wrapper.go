@@ -10,17 +10,20 @@ import (
 	"sync"
 
 	"github.com/jaganathanb/dapps-api/api/dto"
+	"github.com/jaganathanb/dapps-api/config"
 )
 
 // HTTPClient represents the HTTP client wrapper
 type HTTPClient struct {
 	client *http.Client
+	config config.Config
 }
 
 // NewHTTPClient creates a new HTTPClient instance
-func NewHTTPClient() *HTTPClient {
+func NewHTTPClient(cfg config.Config) *HTTPClient {
 	return &HTTPClient{
 		client: &http.Client{},
+		config: cfg,
 	}
 }
 
@@ -94,6 +97,8 @@ func (c *HTTPClient) doRequest(config dto.HttpRequestConfig) dto.HttpResponseWra
 	if err != nil {
 		return dto.HttpResponseWrapper{Err: err, RequestID: config.RequestID}
 	}
+
+	req.Header.Add("apiKey", c.config.Server.GstApiKey)
 
 	resp, err := c.client.Do(req)
 	if err != nil {

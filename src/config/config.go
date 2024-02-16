@@ -24,6 +24,8 @@ type Config struct {
 type ServerConfig struct {
 	InternalPort string
 	ExternalPort string
+	GstBaseUrl   string
+	GstApiKey    string
 	RunMode      string
 	DB           string
 }

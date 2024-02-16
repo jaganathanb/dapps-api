@@ -9,7 +9,7 @@ import (
 
 type Gst struct {
 	BaseModel
-	Gstin            string                            `json:"gstin"`
+	Gstin            string                            `gorm:"primaryKey;type:string;size:30;not null,unique"`
 	Name             string                            `json:"name"`
 	Tradename        string                            `json:"tradename"`
 	RegistrationDate string                            `json:"registrationDate"`

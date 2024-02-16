@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"slices"
@@ -53,11 +54,11 @@ func (s *GstService) CreateGsts(req *dto.CreateGstsRequest) (string, error) {
 		} else {
 			var gstUrl, returnsUrl string
 			if s.base.Config.Server.RunMode == "release" {
-				gstUrl = fmt.Sprintf("https://taxpayer.irisgst.com/api/search?gstin=%s", v)
-				returnsUrl = fmt.Sprintf("https://taxpayer.irisgst.com/api/returnstatus?gstin=%s", v)
+				gstUrl = fmt.Sprintf("%ssearch?gstin=%s", s.base.Config.Server.GstBaseUrl, v)
+				returnsUrl = fmt.Sprintf("%sreturnstatus?gstin=%s", s.base.Config.Server.GstBaseUrl, v)
 			} else {
-				gstUrl = fmt.Sprintf("http://localhost:%s/api/v%d/mocks/gsts/%s", s.base.Config.Server.ExternalPort, constants.Version, v)
-				returnsUrl = fmt.Sprintf("http://localhost:%s/api/v%d/mocks/returns/%s", s.base.Config.Server.ExternalPort, constants.Version, v)
+				gstUrl = fmt.Sprintf("%smocks/gsts/%s", s.base.Config.Server.GstBaseUrl, v)
+				returnsUrl = fmt.Sprintf("%smocks/returns/%s", s.base.Config.Server.GstBaseUrl, v)
 			}
 
 			rqs := []dto.HttpRequestConfig{{Method: http.MethodGet, RequestID: v, URL: gstUrl, ResponseType: &dto.HttpResponseResult[models.Gst]{}}, {Method: http.MethodGet, RequestID: v, URL: returnsUrl, ResponseType: &dto.HttpResponseResult[[]models.GstStatus]{}}}
@@ -65,12 +66,18 @@ func (s *GstService) CreateGsts(req *dto.CreateGstsRequest) (string, error) {
 		}
 	}
 
-	client := httpwrapper.NewHTTPClient()
+	client := httpwrapper.NewHTTPClient(*s.base.Config)
+
+	gsts := []models.Gst{}
+	errResps := []dto.HttpResponseWrapper{}
 	for _, req := range reqs {
 		responses := client.MakeRequests(req)
 
 		// Process responses
-		gsts := processResponses(responses)
+		gs, es := processResponses(responses)
+
+		gsts = append(gsts, gs...)
+		errResps = append(errResps, es...)
 
 		tx := s.base.Database.Begin()
 
@@ -86,15 +93,24 @@ func (s *GstService) CreateGsts(req *dto.CreateGstsRequest) (string, error) {
 		tx.Commit()
 	}
 
-	return fmt.Sprintf("%s gst details already exists. %d gst details entered into the system.", exists, len(reqs)), nil
+	ids := lo.Map(gsts, func(gst models.Gst, i int) string { return gst.Gstin })
+	errIds := lo.Uniq(lo.Map(errResps, func(err dto.HttpResponseWrapper, i int) string { return err.RequestID }))
+
+	if len(errIds) == len(req.Gstins) {
+		err = errors.New(fmt.Sprintf("Something went wrong with %s gstins", errIds))
+	}
+
+	return fmt.Sprintf("%s gst details already exists. %s gst details entered into the system. %s gst details got errored out", exists, ids, errIds), err
 }
 
-func processResponses(responses []dto.HttpResponseWrapper) []models.Gst {
+func processResponses(responses []dto.HttpResponseWrapper) ([]models.Gst, []dto.HttpResponseWrapper) {
 	grouped := lo.GroupBy(responses, func(res dto.HttpResponseWrapper) string { return res.RequestID })
 	gsts := []models.Gst{}
+	errResps := []dto.HttpResponseWrapper{}
 
 	for _, resps := range grouped {
 		respsWithoutErr := lo.Filter(resps, func(res dto.HttpResponseWrapper, i int) bool { return res.Err == nil })
+		errResps = append(errResps, lo.Filter(resps, func(res dto.HttpResponseWrapper, i int) bool { return res.Err != nil })...)
 
 		if len(respsWithoutErr) == 2 {
 			var gst models.Gst
@@ -119,7 +135,7 @@ func processResponses(responses []dto.HttpResponseWrapper) []models.Gst {
 		}
 	}
 
-	return gsts
+	return gsts, errResps
 }
 
 func processGstStatuses(gstin string, returns []models.GstStatus) []models.GstStatus {
@@ -137,7 +153,7 @@ func getLatestReturnStatus(gstReturnType constants.GstReturnType, returns []mode
 	pendings := []string{}
 
 	filed := lo.FilterMap(returns, func(ret models.GstStatus, i int) (models.GstStatus, bool) {
-		return models.GstStatus{Dof: ret.Dof, RetPrd: ret.RetPrd}, ret.Status == constants.Filed
+		return models.GstStatus{Dof: ret.Dof, RetPrd: ret.RetPrd, Arn: ret.Arn, Mof: ret.Mof}, ret.Status == constants.Filed
 	})
 
 	slices.SortFunc(filed,

@@ -1,12 +1,14 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jaganathanb/dapps-api/api/helper"
 	"github.com/jaganathanb/dapps-api/config"
+	service_errors "github.com/jaganathanb/dapps-api/pkg/service-errors"
 	"github.com/jaganathanb/dapps-api/services"
 )
 
@@ -41,6 +43,12 @@ func (h *MockHandler) GetMockData(c *gin.Context) {
 	if err != nil {
 		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(err),
 			helper.GenerateBaseResponseWithError(nil, false, helper.InternalError, err))
+		return
+	}
+
+	if res == nil {
+		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(errors.New(service_errors.GstNotFound)),
+			helper.GenerateBaseResponseWithError(nil, false, helper.InternalError, errors.New(service_errors.GstNotFound)))
 		return
 	}
 
