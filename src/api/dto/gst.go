@@ -7,20 +7,14 @@ import (
 )
 
 type CreateGstRequest struct {
-	Gstin            string      `json:"gstin" binding:"required,len=15"`
-	TradeName        string      `json:"tradeName"`
-	RegistrationDate time.Time   `json:"registrationDate"`
-	Locked           bool        `json:"locked"`
-	MobileNumber     string      `json:"mobileNumber" binding:"max=10"`
-	Address          string      `json:"address" binding:"max=128"`
-	GstStatuses      []GstStatus `json:"gstStatuses"`
+	Gst
 }
 
 type CreateGstsRequest struct {
 	Gstins []string `json:"gstins" binding:"required,gstins"`
 }
 
-type GetGstResponse = CreateGstRequest
+type GetGstResponse = Gst
 
 type GetGstsResponse = []GetGstResponse
 
@@ -39,20 +33,37 @@ type RemoveGstRequest struct {
 }
 
 type Gst struct {
-	Gstin            string      `gorm:"type:string;size:30;not null,unique"`
-	TradeName        string      `gorm:"type:string;size:64;not null"`
-	RegistrationDate time.Time   `gorm:"type:TIMESTAMP;default:CURRENT_TIMESTAMP;not null"`
-	Locked           bool        `gorm:"type:bool;default:false"`
-	Address          string      `gorm:"type:string;size:128;null"`
-	MobileNumber     string      `gorm:"type:string;size:10;null;default:null"`
-	GstStatuses      []GstStatus `gorm:"foreignKey:Gstin;references:Gstin"`
+	Gstin            string           `json:"gstin"`
+	Name             string           `json:"name"`
+	TradeName        string           `json:"tradeName"`
+	RegistrationDate string           `json:"registrationDate"`
+	Type             string           `json:"type"`
+	LastUpdateDate   time.Time        `json:"lastUpdateDate"`
+	Locked           bool             `json:"locked"`
+	MobileNumber     string           `json:"mobile"`
+	GstStatuses      []GstStatus      `json:"gstStatuses"`
+	PermenantAddress PermenantAddress `json:"permenantAddress"`
+}
+
+type PermenantAddress struct {
+	Street   string `json:"street"`
+	Locality string `json:"locality"`
+	DoorNo   string `json:"doorNo"`
+	State    string `json:"state"`
+	Pincode  string `json:"pincode"`
+	District string `json:"district"`
+	City     string `json:"city"`
+	LandMark string `json:"landMark"`
 }
 
 type GstStatus struct {
-	GstRType       constants.GstReturnType
-	Status         constants.GstReturnStatus
-	FiledDate      string
-	PendingReturns []string
-	TaxPeriod      string
-	Notes          string
+	Valid          string                    `json:"valid"`
+	ModeOfFiling   string                    `json:"modeOfFiling"`
+	LastFiledDate  string                    `json:"lastFiledDate"`
+	ReturnType     constants.GstReturnType   `json:"returnType"`
+	ReturnPeriod   string                    `json:"returnPeriod"`
+	Arn            string                    `json:"arn"`
+	Status         constants.GstReturnStatus `json:"status"`
+	Notes          string                    `json:"notes"`
+	PendingReturns []string                  `json:"pendingReturns"`
 }

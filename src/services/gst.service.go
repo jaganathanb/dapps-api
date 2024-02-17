@@ -34,7 +34,6 @@ func NewGstService(cfg *config.Config) *GstService {
 				{string: "GstStatuses"},
 				{string: "Pradr"},
 				{string: "Adadr"},
-				{string: "Addr"},
 			},
 			Config: cfg,
 		},
@@ -280,11 +279,11 @@ func mapGSTStatus(statuses []dto.GstStatus) []models.GstStatus {
 
 	for _, v := range statuses {
 		payload := models.GstStatus{
-			Rtntype:        v.GstRType,
+			Rtntype:        v.ReturnType,
 			Status:         v.Status,
-			Dof:            v.FiledDate,
+			Dof:            v.LastFiledDate,
 			PendingReturns: v.PendingReturns,
-			RetPrd:         v.TaxPeriod,
+			RetPrd:         v.ReturnPeriod,
 			Notes:          v.Notes,
 		}
 

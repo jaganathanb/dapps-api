@@ -53,26 +53,28 @@ definitions:
     type: object
   github_com_jaganathanb_dapps-api_api_dto.GetGstResponse:
     properties:
-      address:
-        maxLength: 128
-        type: string
       gstStatuses:
         items:
           $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.GstStatus'
         type: array
       gstin:
         type: string
+      lastUpdateDate:
+        type: string
       locked:
         type: boolean
-      mobileNumber:
-        maxLength: 10
+      mobile:
         type: string
+      name:
+        type: string
+      permenantAddress:
+        $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.PermenantAddress'
       registrationDate:
         type: string
       tradeName:
         type: string
-    required:
-    - gstin
+      type:
+        type: string
     type: object
   github_com_jaganathanb_dapps-api_api_dto.GetOtpRequest:
     properties:
@@ -85,19 +87,25 @@ definitions:
     type: object
   github_com_jaganathanb_dapps-api_api_dto.GstStatus:
     properties:
-      filedDate:
+      arn:
         type: string
-      gstRType:
-        $ref: '#/definitions/constants.GstReturnType'
+      lastFiledDate:
+        type: string
+      modeOfFiling:
+        type: string
       notes:
         type: string
       pendingReturns:
         items:
           type: string
         type: array
+      returnPeriod:
+        type: string
+      returnType:
+        $ref: '#/definitions/constants.GstReturnType'
       status:
         type: string
-      taxPeriod:
+      valid:
         type: string
     type: object
   github_com_jaganathanb_dapps-api_api_dto.LoginByUsernameRequest:
@@ -143,6 +151,25 @@ definitions:
         items:
           $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.Sort'
         type: array
+    type: object
+  github_com_jaganathanb_dapps-api_api_dto.PermenantAddress:
+    properties:
+      city:
+        type: string
+      district:
+        type: string
+      doorNo:
+        type: string
+      landMark:
+        type: string
+      locality:
+        type: string
+      pincode:
+        type: string
+      state:
+        type: string
+      street:
+        type: string
     type: object
   github_com_jaganathanb_dapps-api_api_dto.RegisterLoginByMobileRequest:
     properties:

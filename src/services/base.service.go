@@ -176,12 +176,72 @@ func Paginate[T any, Tr any](pagination *dto.PaginationInputWithFilter, preloads
 	if err != nil {
 		return nil, err
 	}
-	rItems, err = common.TypeConverter[[]Tr](items)
+
+	// special case for GST
+	switch any(*model).(type) {
+	case models.Gst:
+		gsts := make([]Tr, 0)
+		for _, gst := range *items {
+			var nGst any = prepareGstDTO(any(gst).(models.Gst))
+			gsts = append(gsts, nGst.(Tr))
+		}
+
+		rItems = &gsts
+		break
+	default:
+		fmt.Println("Falling back to Type conversion")
+		rItems, err = common.TypeConverter[[]Tr](items)
+	}
+
 	if err != nil {
 		return nil, err
 	}
-	return NewPagedList(rItems, totalRows, pagination.PageNumber, int64(pagination.PageSize)), err
 
+	return NewPagedList(rItems, totalRows, pagination.PageNumber, int64(pagination.PageSize)), err
+}
+
+func prepareGstDTO(data models.Gst) dto.GetGstResponse {
+	return dto.GetGstResponse{
+		Gstin:            data.Gstin,
+		Name:             data.Name,
+		TradeName:        data.Tradename,
+		RegistrationDate: data.RegistrationDate,
+		Type:             data.Type,
+		LastUpdateDate:   data.LastUpdateDate,
+		Locked:           data.Locked,
+		MobileNumber:     data.MobileNumber,
+		GstStatuses:      prepareGstStatusDTO(data.GstStatuses),
+		PermenantAddress: dto.PermenantAddress{
+			Street:   data.Pradr.St,
+			Locality: data.Pradr.Loc,
+			DoorNo:   data.Pradr.Bno,
+			State:    data.StateCd,
+			Pincode:  data.Pradr.Pncd,
+			District: data.Pradr.District,
+			City:     data.Pradr.City,
+			LandMark: data.Pradr.LandMark,
+		},
+	}
+}
+
+func prepareGstStatusDTO(gstStatuses []models.GstStatus) []dto.GstStatus {
+	returns := []dto.GstStatus{}
+
+	for _, status := range gstStatuses {
+		returns = append(returns, dto.GstStatus{
+			Valid:          status.Valid,
+			ModeOfFiling:   status.Mof,
+			LastFiledDate:  status.Dof,
+			ReturnType:     status.Rtntype,
+			ReturnPeriod:   status.RetPrd,
+			Arn:            status.Arn,
+			Status:         status.Status,
+			Notes:          status.Notes,
+			PendingReturns: status.PendingReturns,
+		})
+	}
+
+	return returns
 }
 
 // getQuery

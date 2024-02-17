@@ -762,14 +762,7 @@
         },
         "github_com_jaganathanb_dapps-api_api_dto.GetGstResponse": {
             "type": "object",
-            "required": [
-                "gstin"
-            ],
             "properties": {
-                "address": {
-                    "type": "string",
-                    "maxLength": 128
-                },
                 "gstStatuses": {
                     "type": "array",
                     "items": {
@@ -779,17 +772,28 @@
                 "gstin": {
                     "type": "string"
                 },
+                "lastUpdateDate": {
+                    "type": "string"
+                },
                 "locked": {
                     "type": "boolean"
                 },
-                "mobileNumber": {
-                    "type": "string",
-                    "maxLength": 10
+                "mobile": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "permenantAddress": {
+                    "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.PermenantAddress"
                 },
                 "registrationDate": {
                     "type": "string"
                 },
                 "tradeName": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }
@@ -810,11 +814,14 @@
         "github_com_jaganathanb_dapps-api_api_dto.GstStatus": {
             "type": "object",
             "properties": {
-                "filedDate": {
+                "arn": {
                     "type": "string"
                 },
-                "gstRType": {
-                    "$ref": "#/definitions/constants.GstReturnType"
+                "lastFiledDate": {
+                    "type": "string"
+                },
+                "modeOfFiling": {
+                    "type": "string"
                 },
                 "notes": {
                     "type": "string"
@@ -825,10 +832,16 @@
                         "type": "string"
                     }
                 },
+                "returnPeriod": {
+                    "type": "string"
+                },
+                "returnType": {
+                    "$ref": "#/definitions/constants.GstReturnType"
+                },
                 "status": {
                     "type": "string"
                 },
-                "taxPeriod": {
+                "valid": {
                     "type": "string"
                 }
             }
@@ -896,6 +909,35 @@
                     "items": {
                         "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.Sort"
                     }
+                }
+            }
+        },
+        "github_com_jaganathanb_dapps-api_api_dto.PermenantAddress": {
+            "type": "object",
+            "properties": {
+                "city": {
+                    "type": "string"
+                },
+                "district": {
+                    "type": "string"
+                },
+                "doorNo": {
+                    "type": "string"
+                },
+                "landMark": {
+                    "type": "string"
+                },
+                "locality": {
+                    "type": "string"
+                },
+                "pincode": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "street": {
+                    "type": "string"
                 }
             }
         },
