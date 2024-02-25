@@ -13,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserService struct {
+type AuthService struct {
 	logger       logging.Logger
 	cfg          *config.Config
 	otpService   *OtpService
@@ -21,11 +21,11 @@ type UserService struct {
 	database     *gorm.DB
 }
 
-func NewUserService(cfg *config.Config) *UserService {
+func NewAuthService(cfg *config.Config) *AuthService {
 	database := db.GetDb()
 	logger := logging.NewLogger(cfg)
 
-	return &UserService{
+	return &AuthService{
 		cfg:          cfg,
 		database:     database,
 		logger:       logger,
@@ -35,7 +35,7 @@ func NewUserService(cfg *config.Config) *UserService {
 }
 
 // Login by username
-func (s *UserService) LoginByUsername(req *dto.LoginByUsernameRequest) (*dto.TokenDetail, error) {
+func (s *AuthService) LoginByUsername(req *dto.LoginByUsernameRequest) (*dto.TokenDetail, error) {
 	var user models.User
 	err := s.database.
 		Model(&models.User{}).
@@ -64,12 +64,12 @@ func (s *UserService) LoginByUsername(req *dto.LoginByUsernameRequest) (*dto.Tok
 	if err != nil {
 		return nil, err
 	}
-	return token, nil
 
+	return token, nil
 }
 
 // Register by username
-func (s *UserService) RegisterByUsername(req *dto.RegisterUserByUsernameRequest) error {
+func (s *AuthService) RegisterByUsername(req *dto.RegisterUserByUsernameRequest) error {
 	u := models.User{Username: req.Username, FirstName: req.FirstName, LastName: req.LastName, Email: req.Email}
 
 	exists, err := s.existsByEmail(req.Email)
@@ -119,7 +119,7 @@ func (s *UserService) RegisterByUsername(req *dto.RegisterUserByUsernameRequest)
 }
 
 // Register/login by mobile number
-func (s *UserService) RegisterLoginByMobileNumber(req *dto.RegisterLoginByMobileRequest) (*dto.TokenDetail, error) {
+func (s *AuthService) RegisterLoginByMobileNumber(req *dto.RegisterLoginByMobileRequest) (*dto.TokenDetail, error) {
 	err := s.otpService.ValidateOtp(req.MobileNumber, req.Otp)
 	if err != nil {
 		return nil, err
@@ -216,7 +216,7 @@ func (s *UserService) RegisterLoginByMobileNumber(req *dto.RegisterLoginByMobile
 
 }
 
-func (s *UserService) SendOtp(req *dto.GetOtpRequest) error {
+func (s *AuthService) SendOtp(req *dto.GetOtpRequest) error {
 	otp := common.GenerateOtp()
 	err := s.otpService.SetOtp(req.MobileNumber, otp)
 	if err != nil {
@@ -225,7 +225,7 @@ func (s *UserService) SendOtp(req *dto.GetOtpRequest) error {
 	return nil
 }
 
-func (s *UserService) existsByEmail(email string) (bool, error) {
+func (s *AuthService) existsByEmail(email string) (bool, error) {
 	var exists bool
 	if err := s.database.Model(&models.User{}).
 		Select("count(*) > 0").
@@ -238,7 +238,7 @@ func (s *UserService) existsByEmail(email string) (bool, error) {
 	return exists, nil
 }
 
-func (s *UserService) existsByUsername(username string) (bool, error) {
+func (s *AuthService) existsByUsername(username string) (bool, error) {
 	var exists bool
 	if err := s.database.Model(&models.User{}).
 		Select("count(*) > 0").
@@ -251,7 +251,7 @@ func (s *UserService) existsByUsername(username string) (bool, error) {
 	return exists, nil
 }
 
-func (s *UserService) existsByMobileNumber(mobileNumber string) (bool, error) {
+func (s *AuthService) existsByMobileNumber(mobileNumber string) (bool, error) {
 	var exists bool
 	if err := s.database.Model(&models.User{}).
 		Select("count(*) > 0").
@@ -264,7 +264,7 @@ func (s *UserService) existsByMobileNumber(mobileNumber string) (bool, error) {
 	return exists, nil
 }
 
-func (s *UserService) getDefaultRole() (roleId int, err error) {
+func (s *AuthService) getDefaultRole() (roleId int, err error) {
 
 	if err = s.database.Model(&models.Role{}).
 		Select("id").

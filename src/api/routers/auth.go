@@ -7,11 +7,11 @@ import (
 	"github.com/jaganathanb/dapps-api/config"
 )
 
-func User(router *gin.RouterGroup, cfg *config.Config) {
-	h := handlers.NewUsersHandler(cfg)
+func Auth(router *gin.RouterGroup, cfg *config.Config) {
+	h := handlers.NewAuthHandler(cfg)
 
 	router.POST("/send-otp", middlewares.OtpLimiter(cfg), middlewares.Authentication(cfg), middlewares.Authorization([]string{"admin"}), h.SendOtp)
-	router.POST("/login-by-username", h.LoginByUsername)
-	router.POST("/register-by-username", h.RegisterByUsername)
-	router.POST("/login-by-mobile", h.RegisterLoginByMobileNumber)
+	router.POST("/login", h.LoginByUsername)
+	router.POST("/register", h.RegisterByUsername)
+	router.POST("/login-m", h.RegisterLoginByMobileNumber)
 }
