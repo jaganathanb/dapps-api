@@ -12,6 +12,7 @@ func Auth(router *gin.RouterGroup, cfg *config.Config) {
 
 	router.POST("/send-otp", middlewares.OtpLimiter(cfg), middlewares.Authentication(cfg), middlewares.Authorization([]string{"admin"}), h.SendOtp)
 	router.POST("/login", h.LoginByUsername)
+	router.POST("/logout", h.LogoutByUsername)
 	router.POST("/register", h.RegisterByUsername)
 	router.POST("/login-m", h.RegisterLoginByMobileNumber)
 }

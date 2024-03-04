@@ -244,6 +244,28 @@ func (s *GstService) UpdateGstStatuses(req *dto.UpdateGstReturnStatusRequest) er
 	return nil
 }
 
+func (s *GstService) LockGstById(req *dto.UpdateGstLockStatusRequest) error {
+	exists, err := s.isGstExistsInSystem(req.Gstin)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return &service_errors.ServiceError{EndUserMessage: fmt.Sprintf(service_errors.GstNotFound, req.Gstin)}
+	}
+
+	tx := s.base.Database.Begin()
+
+	err = tx.Model(&models.Gst{}).Where("gstin = ?", req.Gstin).Update("locked", req.Locked).Error
+	if err != nil {
+		tx.Rollback()
+		s.base.Logger.Error(logging.Sqlite3, logging.Rollback, err.Error(), nil)
+		return err
+	}
+
+	tx.Commit()
+	return nil
+}
+
 func (s *GstService) isGstExistsInSystem(gstin string) (bool, error) {
 	var exists bool
 	if err := s.base.Database.Model(&models.Gst{}).

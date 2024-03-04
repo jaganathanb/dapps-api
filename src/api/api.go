@@ -94,6 +94,10 @@ func RegisterValidators() {
 		if err != nil {
 			logger.Error(logging.Validation, logging.Startup, err.Error(), nil)
 		}
+		err = val.RegisterValidation("gstin", validation.GstinValidator, true)
+		if err != nil {
+			logger.Error(logging.Validation, logging.Startup, err.Error(), nil)
+		}
 	}
 }
 

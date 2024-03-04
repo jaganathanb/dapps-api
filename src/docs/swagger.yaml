@@ -353,6 +353,39 @@ paths:
       summary: RegisterLoginByMobileNumber
       tags:
       - Auth
+  /v{version}/auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Logout the user
+      parameters:
+      - default: 1
+        description: Version
+        enum:
+        - 1
+        - 2
+        in: path
+        name: version
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Success
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "400":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "409":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+      summary: LogoutByUsername
+      tags:
+      - Auth
   /v{version}/auth/register:
     post:
       consumes:
@@ -470,6 +503,52 @@ paths:
       security:
       - AuthBearer: []
       summary: Creates GSTs
+      tags:
+      - GSTs
+  /v{version}/gsts/{gstin}/lock:
+    put:
+      consumes:
+      - application/json
+      description: Updates the lock status of GST in system
+      parameters:
+      - default: 1
+        description: Version
+        enum:
+        - 1
+        - 2
+        in: path
+        name: version
+        required: true
+        type: integer
+      - description: Gstin
+        in: path
+        name: gstin
+        required: true
+        type: string
+      - description: Locked
+        in: body
+        name: Request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.UpdateGstReturnStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Success
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "400":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "409":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+      security:
+      - AuthBearer: []
+      summary: Updates GST lock status
       tags:
       - GSTs
   /v{version}/gsts/{gstin}/statuses:

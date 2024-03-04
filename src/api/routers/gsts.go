@@ -18,4 +18,5 @@ func Gst(router *gin.RouterGroup, cfg *config.Config) {
 	router.POST("/page", h.GetGsts)
 	router.GET("/", h.GetGsts)
 	router.PUT("/:gstin/statuses", h.UpdateGstStatuses)
+	router.PUT("/:gstin/lock", h.LockGstById)
 }

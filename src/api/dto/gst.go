@@ -23,8 +23,8 @@ type UpdateGstReturnStatusRequest struct {
 	GstStatuses []GstStatus `json:"gstStatuses"`
 }
 
-type LockGstRequest struct {
-	Gstin  string `json:"gstin" binding:"required,max=15"`
+type UpdateGstLockStatusRequest struct {
+	Gstin  string `json:"gstin" binding:"required,len=15,gstin"`
 	Locked bool   `json:"locked"`
 }
 

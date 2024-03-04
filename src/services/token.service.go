@@ -75,6 +75,10 @@ func (s *TokenService) GenerateToken(token *tokenDto) (*dto.TokenDetail, error) 
 	return td, nil
 }
 
+func (s *TokenService) InvalidaateToken(username string) (bool, error) {
+	return true, nil
+}
+
 func (s *TokenService) VerifyToken(token string) (*jwt.Token, error) {
 	at, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)

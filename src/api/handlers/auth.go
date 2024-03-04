@@ -49,6 +49,35 @@ func (h *AuthHandler) LoginByUsername(c *gin.Context) {
 	c.JSON(http.StatusCreated, helper.GenerateBaseResponse(token, true, helper.Success))
 }
 
+// LogoutByUsername godoc
+// @Summary LogoutByUsername
+// @Description Logout the user
+// @Tags Auth
+// @Accept  json
+// @Produce  json
+// @Param version path int true "Version" Enums(1, 2) default(1)
+// @Success 201 {object} helper.BaseHttpResponse "Success"
+// @Failure 400 {object} helper.BaseHttpResponse "Failed"
+// @Failure 409 {object} helper.BaseHttpResponse "Failed"
+// @Router /v{version}/auth/logout [post]
+func (h *AuthHandler) LogoutByUsername(c *gin.Context) {
+	req := new(dto.LogoutByUsernameRequest)
+	err := c.ShouldBindJSON(&req)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest,
+			helper.GenerateBaseResponseWithValidationError(nil, false, helper.ValidationError, err))
+		return
+	}
+	ok, err := h.service.LogoutByUsername(req)
+	if err != nil {
+		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(err),
+			helper.GenerateBaseResponseWithError(nil, false, helper.InternalError, err))
+		return
+	}
+
+	c.JSON(http.StatusCreated, helper.GenerateBaseResponse(ok, true, helper.Success))
+}
+
 // RegisterByUsername godoc
 // @Summary RegisterByUsername
 // @Description RegisterByUsername

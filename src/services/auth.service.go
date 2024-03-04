@@ -68,6 +68,16 @@ func (s *AuthService) LoginByUsername(req *dto.LoginByUsernameRequest) (*dto.Tok
 	return token, nil
 }
 
+// Login by username
+func (s *AuthService) LogoutByUsername(req *dto.LogoutByUsernameRequest) (bool, error) {
+	ok, err := s.tokenService.InvalidaateToken(req.Username)
+	if err != nil {
+		return false, err
+	}
+
+	return ok, nil
+}
+
 // Register by username
 func (s *AuthService) RegisterByUsername(req *dto.RegisterUserByUsernameRequest) error {
 	u := models.User{Username: req.Username, FirstName: req.FirstName, LastName: req.LastName, Email: req.Email}
