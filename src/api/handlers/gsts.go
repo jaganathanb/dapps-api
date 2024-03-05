@@ -68,7 +68,7 @@ func (h *GstsHandler) CreateGsts(c *gin.Context) {
 	c.JSON(http.StatusCreated, helper.GenerateBaseResponse(msg, true, helper.Success))
 }
 
-// UpdateGstStatuses godoc
+// UpdateGstStatus godoc
 // @Summary Updates GST statuses
 // @Description Updates the statuses of the GST entry into the system
 // @Tags GSTs
@@ -77,12 +77,12 @@ func (h *GstsHandler) CreateGsts(c *gin.Context) {
 // @Security AuthBearer
 // @Param version path int true "Version" Enums(1, 2) default(1)
 // @Param gstin path string true "Gstin"
-// @Param Request body dto.UpdateGstReturnStatusRequest true "UpdateGstStatuses"
+// @Param Request body dto.UpdateGstReturnStatusRequest true "UpdateGstStatus"
 // @Success 201 {object} helper.BaseHttpResponse "Success"
 // @Failure 400 {object} helper.BaseHttpResponse "Failed"
 // @Failure 409 {object} helper.BaseHttpResponse "Failed"
 // @Router /v{version}/gsts/{gstin}/statuses [put]
-func (h *GstsHandler) UpdateGstStatuses(c *gin.Context) {
+func (h *GstsHandler) UpdateGstStatus(c *gin.Context) {
 	gstin := c.Params.ByName("gstin")
 	if gstin == "" {
 		c.AbortWithStatusJSON(http.StatusNotFound,
@@ -99,14 +99,14 @@ func (h *GstsHandler) UpdateGstStatuses(c *gin.Context) {
 			helper.GenerateBaseResponseWithValidationError(nil, false, helper.ValidationError, err))
 		return
 	}
-	err = h.service.UpdateGstStatuses(req)
+	ok, err := h.service.UpdateGstStatus(req)
 	if err != nil {
 		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(err),
 			helper.GenerateBaseResponseWithError(nil, false, helper.InternalError, err))
 		return
 	}
 
-	c.JSON(http.StatusCreated, helper.GenerateBaseResponse(nil, true, helper.Success))
+	c.JSON(http.StatusCreated, helper.GenerateBaseResponse(ok, true, helper.Success))
 }
 
 // LockGstById godoc
@@ -141,12 +141,12 @@ func (h *GstsHandler) LockGstById(c *gin.Context) {
 			helper.GenerateBaseResponseWithValidationError(nil, false, helper.ValidationError, err))
 		return
 	}
-	err = h.service.LockGstById(req)
+	ok, err := h.service.LockGstById(req)
 	if err != nil {
 		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(err),
 			helper.GenerateBaseResponseWithError(nil, false, helper.InternalError, err))
 		return
 	}
 
-	c.JSON(http.StatusCreated, helper.GenerateBaseResponse(nil, true, helper.Success))
+	c.JSON(http.StatusCreated, helper.GenerateBaseResponse(ok, true, helper.Success))
 }

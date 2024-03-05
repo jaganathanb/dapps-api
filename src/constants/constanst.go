@@ -31,6 +31,7 @@ type GstReturnType string
 
 const (
 	GSTR1  GstReturnType = "GSTR1"
+	GSTR2  GstReturnType = "GSTR2"
 	GSTR3B GstReturnType = "GSTR3B"
 	GSTR9  GstReturnType = "GSTR9"
 )

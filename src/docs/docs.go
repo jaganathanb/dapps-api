@@ -691,7 +691,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "UpdateGstStatuses",
+                        "description": "UpdateGstStatus",
                         "name": "Request",
                         "in": "body",
                         "required": true,
@@ -848,11 +848,13 @@ const docTemplate = `{
             "type": "string",
             "enum": [
                 "GSTR1",
+                "GSTR2",
                 "GSTR3B",
                 "GSTR9"
             ],
             "x-enum-varnames": [
                 "GSTR1",
+                "GSTR2",
                 "GSTR3B",
                 "GSTR9"
             ]
@@ -1138,13 +1140,13 @@ const docTemplate = `{
                 "gstin"
             ],
             "properties": {
-                "gstStatuses": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.GstStatus"
-                    }
-                },
                 "gstin": {
+                    "type": "string"
+                },
+                "returnType": {
+                    "$ref": "#/definitions/constants.GstReturnType"
+                },
+                "status": {
                     "type": "string"
                 }
             }

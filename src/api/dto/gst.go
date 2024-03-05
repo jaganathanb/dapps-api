@@ -19,8 +19,9 @@ type GetGstResponse = Gst
 type GetGstsResponse = []GetGstResponse
 
 type UpdateGstReturnStatusRequest struct {
-	Gstin       string      `json:"gstin" binding:"required,len=15,gstin"`
-	GstStatuses []GstStatus `json:"gstStatuses"`
+	Gstin      string                    `json:"gstin" binding:"required,len=15,gstin"`
+	ReturnType constants.GstReturnType   `json:"returnType"`
+	Status     constants.GstReturnStatus `json:"status"`
 }
 
 type UpdateGstLockStatusRequest struct {

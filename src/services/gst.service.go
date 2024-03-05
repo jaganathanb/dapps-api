@@ -218,39 +218,35 @@ func (s *GstService) GetByFilter(ctx context.Context, req *dto.PaginationInputWi
 	return s.base.GetByFilter(ctx, req)
 }
 
-func (s *GstService) UpdateGstStatuses(req *dto.UpdateGstReturnStatusRequest) error {
+func (s *GstService) UpdateGstStatus(req *dto.UpdateGstReturnStatusRequest) (bool, error) {
 	exists, err := s.isGstExistsInSystem(req.Gstin)
 	if err != nil {
-		return err
+		return false, err
 	}
 	if !exists {
-		return &service_errors.ServiceError{EndUserMessage: fmt.Sprintf(service_errors.GstNotFound, req.Gstin)}
+		return false, &service_errors.ServiceError{EndUserMessage: fmt.Sprintf(service_errors.GstNotFound, req.Gstin)}
 	}
 
 	tx := s.base.Database.Begin()
 
-	statuses := mapGSTStatus(req.GstStatuses)
-
-	for _, v := range statuses {
-		err = tx.Where("gstin = ?", req.Gstin).Updates(&v).Error
-		if err != nil {
-			tx.Rollback()
-			s.base.Logger.Error(logging.Sqlite3, logging.Rollback, err.Error(), nil)
-			return err
-		}
+	err = tx.Model(&models.GstStatus{}).Where("gstin = ? AND rtntype = ?", req.Gstin, req.ReturnType).Update("status", req.Status).Error
+	if err != nil {
+		tx.Rollback()
+		s.base.Logger.Error(logging.Sqlite3, logging.Rollback, err.Error(), nil)
+		return false, err
 	}
 
 	tx.Commit()
-	return nil
+	return true, nil
 }
 
-func (s *GstService) LockGstById(req *dto.UpdateGstLockStatusRequest) error {
+func (s *GstService) LockGstById(req *dto.UpdateGstLockStatusRequest) (bool, error) {
 	exists, err := s.isGstExistsInSystem(req.Gstin)
 	if err != nil {
-		return err
+		return false, err
 	}
 	if !exists {
-		return &service_errors.ServiceError{EndUserMessage: fmt.Sprintf(service_errors.GstNotFound, req.Gstin)}
+		return false, &service_errors.ServiceError{EndUserMessage: fmt.Sprintf(service_errors.GstNotFound, req.Gstin)}
 	}
 
 	tx := s.base.Database.Begin()
@@ -259,11 +255,11 @@ func (s *GstService) LockGstById(req *dto.UpdateGstLockStatusRequest) error {
 	if err != nil {
 		tx.Rollback()
 		s.base.Logger.Error(logging.Sqlite3, logging.Rollback, err.Error(), nil)
-		return err
+		return false, err
 	}
 
 	tx.Commit()
-	return nil
+	return true, nil
 }
 
 func (s *GstService) isGstExistsInSystem(gstin string) (bool, error) {

@@ -21,11 +21,13 @@ definitions:
   constants.GstReturnType:
     enum:
     - GSTR1
+    - GSTR2
     - GSTR3B
     - GSTR9
     type: string
     x-enum-varnames:
     - GSTR1
+    - GSTR2
     - GSTR3B
     - GSTR9
   github_com_jaganathanb_dapps-api_api_dto.CreateGstsRequest:
@@ -217,11 +219,11 @@ definitions:
     type: object
   github_com_jaganathanb_dapps-api_api_dto.UpdateGstReturnStatusRequest:
     properties:
-      gstStatuses:
-        items:
-          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.GstStatus'
-        type: array
       gstin:
+        type: string
+      returnType:
+        $ref: '#/definitions/constants.GstReturnType'
+      status:
         type: string
     required:
     - gstin
@@ -571,7 +573,7 @@ paths:
         name: gstin
         required: true
         type: string
-      - description: UpdateGstStatuses
+      - description: UpdateGstStatus
         in: body
         name: Request
         required: true

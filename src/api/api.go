@@ -56,6 +56,8 @@ func RegisterRoutes(r *gin.Engine, cfg *config.Config) {
 		// User, GSTs
 		auth := v1.Group("/auth")
 		gsts := v1.Group("/gsts")
+		gst := gsts.Group("/:gstin")
+
 		mocks := v1.Group("/mocks")
 
 		// Test
@@ -64,7 +66,8 @@ func RegisterRoutes(r *gin.Engine, cfg *config.Config) {
 
 		// User, GST & Mock
 		routers.Auth(auth, cfg)
-		routers.Gst(gsts, cfg)
+		routers.Gsts(gsts, cfg)
+		routers.Gst(gst, cfg)
 		routers.Mock(mocks, cfg)
 
 		r.Static("/static", "./uploads")

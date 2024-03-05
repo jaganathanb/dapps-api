@@ -257,13 +257,13 @@ func getQuery[T any](filter *dto.DynamicFilter) string {
 				fld.Name = common.ToSnakeCase(fld.Name)
 				switch filter.Type {
 				case "contains":
-					query = append(query, fmt.Sprintf("%s ILike '%%%s%%'", fld.Name, filter.From))
+					query = append(query, fmt.Sprintf("%s Like '%%%s%%'", fld.Name, filter.From))
 				case "notContains":
-					query = append(query, fmt.Sprintf("%s not ILike '%%%s%%'", fld.Name, filter.From))
+					query = append(query, fmt.Sprintf("%s NOT Like '%%%s%%'", fld.Name, filter.From))
 				case "startsWith":
-					query = append(query, fmt.Sprintf("%s ILike '%s%%'", fld.Name, filter.From))
+					query = append(query, fmt.Sprintf("%s Like '%s%%'", fld.Name, filter.From))
 				case "endsWith":
-					query = append(query, fmt.Sprintf("%s ILike '%%%s'", fld.Name, filter.From))
+					query = append(query, fmt.Sprintf("%s Like '%%%s'", fld.Name, filter.From))
 				case "equals":
 					query = append(query, fmt.Sprintf("%s = '%s'", fld.Name, filter.From))
 				case "notEqual":
