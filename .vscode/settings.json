@@ -2,25 +2,14 @@
   "gopls": { "ui.semanticTokens": true },
   "go.lintTool": "golangci-lint",
   "go.lintFlags": ["--fast"],
-  "editor.formatOnSave": true,
+  "editor.formatOnSave": false,
   "go.formatTool": "goimports",
-  "[go]": {
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-      "source.organizeImports": "explicit"
-    }
-  },
-  "[go.mod]": {
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-      "source.organizeImports": "explicit"
-    }
-  },
   "go.toolsManagement.autoUpdate": true,
   "go.vetOnSave": "package",
   "[go][go.mod]": {
+    "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-      "source.organizeImports": "explicit"
+      "source.organizeImports": "always"
     }
   }
 }
