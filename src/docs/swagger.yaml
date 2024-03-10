@@ -32,12 +32,12 @@ definitions:
     - GSTR9
   github_com_jaganathanb_dapps-api_api_dto.CreateGstsRequest:
     properties:
-      gstins:
+      gsts:
         items:
-          type: string
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.Gst'
         type: array
     required:
-    - gstins
+    - gsts
     type: object
   github_com_jaganathanb_dapps-api_api_dto.Filter:
     properties:
@@ -55,6 +55,8 @@ definitions:
     type: object
   github_com_jaganathanb_dapps-api_api_dto.GetGstResponse:
     properties:
+      email:
+        type: string
       gstStatuses:
         items:
           $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.GstStatus'
@@ -65,7 +67,7 @@ definitions:
         type: string
       locked:
         type: boolean
-      mobile:
+      mobileNumber:
         type: string
       name:
         type: string
@@ -86,6 +88,33 @@ definitions:
         type: string
     required:
     - mobileNumber
+    type: object
+  github_com_jaganathanb_dapps-api_api_dto.Gst:
+    properties:
+      email:
+        type: string
+      gstStatuses:
+        items:
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.GstStatus'
+        type: array
+      gstin:
+        type: string
+      lastUpdateDate:
+        type: string
+      locked:
+        type: boolean
+      mobileNumber:
+        type: string
+      name:
+        type: string
+      permenantAddress:
+        $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.PermenantAddress'
+      registrationDate:
+        type: string
+      tradeName:
+        type: string
+      type:
+        type: string
     type: object
   github_com_jaganathanb_dapps-api_api_dto.GstStatus:
     properties:

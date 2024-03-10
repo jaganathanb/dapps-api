@@ -39,24 +39,31 @@ func NewGstService(cfg *config.Config) *GstService {
 }
 
 func (s *GstService) CreateGsts(req *dto.CreateGstsRequest) (string, error) {
-	exists, err := s.getExistingGstsInSystem(req.Gstins)
+	exists, err := s.getExistingGstsInSystem(req.Gsts)
 	if err != nil {
 		return "", err
 	}
 
 	gstins := []string{}
-	for _, v := range req.Gstins {
-		if slices.Contains(exists, v) {
-			s.base.Logger.Warn(logging.Sqlite3, logging.Select, fmt.Sprintf(service_errors.GstExists, v), nil)
+	for _, v := range req.Gsts {
+		if slices.Contains(exists, v.Gstin) {
+			s.base.Logger.Warn(logging.Sqlite3, logging.Select, fmt.Sprintf(service_errors.GstExists, v.Gstin), nil)
 		} else {
-			gstins = append(gstins, v)
+			gstins = append(gstins, v.Gstin)
 		}
 	}
 
 	tx := s.base.Database.Begin()
 
-	for _, gstin := range gstins {
-		err = tx.Create(&models.Gst{Gstin: gstin}).Error
+	for _, gst := range req.Gsts {
+		err = tx.Create(&models.Gst{
+			Gstin:        gst.Gstin,
+			MobileNumber: gst.MobileNumber,
+			Name:         gst.Name,
+			Tradename:    gst.TradeName,
+			Email:        gst.Email,
+			Type:         gst.Type,
+		}).Error
 		if err != nil {
 			tx.Rollback()
 			s.base.Logger.Error(logging.Sqlite3, logging.Rollback, err.Error(), nil)
@@ -274,11 +281,11 @@ func (s *GstService) isGstExistsInSystem(gstin string) (bool, error) {
 	return exists, nil
 }
 
-func (s *GstService) getExistingGstsInSystem(gstins []string) ([]string, error) {
+func (s *GstService) getExistingGstsInSystem(gsts []dto.Gst) ([]string, error) {
 	var exists []string
 	if err := s.base.Database.Model(&models.Gst{}).
 		Select("Gstin").
-		Where("Gstin IN ?", gstins).
+		Where("Gstin IN ?", lo.Map(gsts, func(g dto.Gst, i int) string { return g.Gstin })).
 		Find(&exists).
 		Error; err != nil {
 		s.base.Logger.Error(logging.Sqlite3, logging.Select, err.Error(), nil)

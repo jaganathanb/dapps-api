@@ -27,6 +27,7 @@ type Gst struct {
 	Adadr            []AdditionalAddress               `gorm:"foreignKey:Gstin;references:Gstin"`
 	Locked           bool                              `gorm:"type:bool;default:false"`
 	MobileNumber     string                            `gorm:"type:string;size:10;null;default:null"`
+	Email            string                            `json:"email"`
 	GstStatuses      []GstStatus                       `gorm:"foreignKey:Gstin;references:Gstin"`
 	Pradr            PermenantAddress                  `gorm:"foreignKey:Gstin;references:Gstin"`
 }

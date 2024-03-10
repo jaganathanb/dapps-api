@@ -9,6 +9,7 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/jaganathanb/dapps-api/api/dto"
 	"github.com/jaganathanb/dapps-api/config"
 )
 
@@ -159,10 +160,10 @@ func ToSnakeCase(str string) string {
 	return strings.ToLower(snake)
 }
 
-func CheckGstins(gstins []string) bool {
+func CheckGstins(gsts []dto.Gst) bool {
 	var ids []string
-	for _, v := range gstins {
-		var g = matchGstIn.FindAllString(v, -1)
+	for _, v := range gsts {
+		var g = matchGstIn.FindAllString(v.Gstin, -1)
 		if len(g) > 0 {
 			ids = append(ids, g[0])
 		}
@@ -171,9 +172,9 @@ func CheckGstins(gstins []string) bool {
 	return len(ids) > 0
 }
 
-func CheckGstin(gstin string) bool {
+func CheckGstin(gst dto.Gst) bool {
 	var ids []string
-	var g = matchGstIn.FindAllString(gstin, -1)
+	var g = matchGstIn.FindAllString(gst.Gstin, -1)
 	if len(g) > 0 {
 		ids = append(ids, g[0])
 	}

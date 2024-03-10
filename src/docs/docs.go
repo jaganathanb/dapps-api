@@ -905,13 +905,13 @@ const docTemplate = `{
         "github_com_jaganathanb_dapps-api_api_dto.CreateGstsRequest": {
             "type": "object",
             "required": [
-                "gstins"
+                "gsts"
             ],
             "properties": {
-                "gstins": {
+                "gsts": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.Gst"
                     }
                 }
             }
@@ -938,6 +938,9 @@ const docTemplate = `{
         "github_com_jaganathanb_dapps-api_api_dto.GetGstResponse": {
             "type": "object",
             "properties": {
+                "email": {
+                    "type": "string"
+                },
                 "gstStatuses": {
                     "type": "array",
                     "items": {
@@ -953,7 +956,7 @@ const docTemplate = `{
                 "locked": {
                     "type": "boolean"
                 },
-                "mobile": {
+                "mobileNumber": {
                     "type": "string"
                 },
                 "name": {
@@ -983,6 +986,47 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 11,
                     "minLength": 11
+                }
+            }
+        },
+        "github_com_jaganathanb_dapps-api_api_dto.Gst": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "gstStatuses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.GstStatus"
+                    }
+                },
+                "gstin": {
+                    "type": "string"
+                },
+                "lastUpdateDate": {
+                    "type": "string"
+                },
+                "locked": {
+                    "type": "boolean"
+                },
+                "mobileNumber": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "permenantAddress": {
+                    "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.PermenantAddress"
+                },
+                "registrationDate": {
+                    "type": "string"
+                },
+                "tradeName": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
                 }
             }
         },

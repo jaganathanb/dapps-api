@@ -11,7 +11,7 @@ type CreateGstRequest struct {
 }
 
 type CreateGstsRequest struct {
-	Gstins []string `json:"gstins" binding:"required,gstins"`
+	Gsts []Gst `json:"gsts" binding:"required"`
 }
 
 type GetGstResponse = Gst
@@ -19,13 +19,13 @@ type GetGstResponse = Gst
 type GetGstsResponse = []GetGstResponse
 
 type UpdateGstReturnStatusRequest struct {
-	Gstin      string                    `json:"gstin" binding:"required,len=15,gstin"`
+	Gstin      string                    `json:"gstin" binding:"required,gstin"`
 	ReturnType constants.GstReturnType   `json:"returnType"`
 	Status     constants.GstReturnStatus `json:"status"`
 }
 
 type UpdateGstLockStatusRequest struct {
-	Gstin  string `json:"gstin" binding:"required,len=15,gstin"`
+	Gstin  string `json:"gstin"`
 	Locked bool   `json:"locked"`
 }
 
@@ -37,11 +37,12 @@ type Gst struct {
 	Gstin            string           `json:"gstin"`
 	Name             string           `json:"name"`
 	TradeName        string           `json:"tradeName"`
+	Email            string           `json:"email"`
 	RegistrationDate string           `json:"registrationDate"`
 	Type             string           `json:"type"`
 	LastUpdateDate   time.Time        `json:"lastUpdateDate"`
 	Locked           bool             `json:"locked"`
-	MobileNumber     string           `json:"mobile"`
+	MobileNumber     string           `json:"mobileNumber"`
 	GstStatuses      []GstStatus      `json:"gstStatuses"`
 	PermenantAddress PermenantAddress `json:"permenantAddress"`
 }
