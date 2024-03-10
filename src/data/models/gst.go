@@ -9,20 +9,20 @@ import (
 
 type Gst struct {
 	BaseModel
-	Gstin            string                            `gorm:"primaryKey;type:string;size:30;not null,unique"`
-	Name             string                            `json:"name"`
-	Tradename        string                            `json:"tradename"`
-	RegistrationDate string                            `json:"registrationDate"`
-	Center           string                            `json:"center"`
-	State            string                            `json:"state"`
+	Gstin            string                            `gorm:"primaryKey;type:string;size:30;index;unique"`
+	Name             string                            `json:"lgnm"`
+	Tradename        string                            `json:"tradeNam"`
+	RegistrationDate string                            `json:"rgdt"`
+	Center           string                            `json:"ctj"`
+	State            string                            `json:"stj"`
 	CenterCd         string                            `json:"center_cd"`
 	StateCd          string                            `json:"state_cd"`
-	Constitution     string                            `json:"constitution"`
-	Type             string                            `json:"type"`
-	Status           string                            `json:"status"`
+	Constitution     string                            `json:"ctb"`
+	Type             string                            `json:"dty"`
+	Status           string                            `json:"sts"`
 	LastUpdateDate   time.Time                         `json:"lastUpdateDate"`
 	CancellationDate time.Time                         `json:"cancellationDate"`
-	Nature           sqlite_custom_type.SqliteStrArray `json:"nature,omitempty;type:text[]"`
+	Nature           sqlite_custom_type.SqliteStrArray `json:"nba,omitempty;type:text[]"`
 	EinvoiceStatus   string                            `json:"einvoiceStatus"`
 	Adadr            []AdditionalAddress               `gorm:"foreignKey:Gstin;references:Gstin"`
 	Locked           bool                              `gorm:"type:bool;default:false"`
@@ -83,6 +83,8 @@ type GstStatus struct {
 	Dof            string                            `json:"dof"`
 	Rtntype        constants.GstReturnType           `json:"rtntype"`
 	RetPrd         string                            `json:"ret_prd"`
+	TaxPrd         string                            `json:"taxp"`
+	FinancialYear  string                            `json:"fy"`
 	Arn            string                            `json:"arn"`
 	Status         constants.GstReturnStatus         `json:"status"`
 	Notes          string                            `json:"notes"`

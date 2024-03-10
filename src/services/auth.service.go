@@ -37,17 +37,18 @@ func NewAuthService(cfg *config.Config) *AuthService {
 // Login by username
 func (s *AuthService) LoginByUsername(req *dto.LoginByUsernameRequest) (*dto.TokenDetail, error) {
 	var user models.User
-	err := s.database.
+	result := s.database.
 		Model(&models.User{}).
-		Where("username = ?", req.Username).
 		Preload("UserRoles", func(tx *gorm.DB) *gorm.DB {
 			return tx.Preload("Role")
 		}).
-		Find(&user).Error
-	if err != nil {
-		return nil, err
+		First(&user, "username = ?", req.Username)
+
+	if result.Error != nil || result.RowsAffected == 0 {
+		return nil, result.Error
 	}
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
+
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
 	if err != nil {
 		return nil, err
 	}

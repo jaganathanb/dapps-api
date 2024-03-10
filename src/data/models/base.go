@@ -11,8 +11,8 @@ type BaseModel struct {
 	Id int `gorm:"primarykey"`
 
 	CreatedAt  time.Time `gorm:"type:TIMESTAMP;default:CURRENT_TIMESTAMP;not null" json:"created_at"`
-	ModifiedAt time.Time `gorm:"type:TIMESTAMP;default:null" json:"modified_at"`
-	DeletedAt  time.Time `gorm:"type:TIMESTAMP;default:null" json:"deleted_at"`
+	ModifiedAt time.Time `gorm:"type:TIMESTAMP;default:null"                       json:"modified_at"`
+	DeletedAt  time.Time `gorm:"type:TIMESTAMP;default:null"                       json:"deleted_at"`
 
 	CreatedBy  int            `gorm:"not null"`
 	ModifiedBy *sql.NullInt64 `gorm:"null"`

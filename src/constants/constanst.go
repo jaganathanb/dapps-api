@@ -1,7 +1,9 @@
 package constants
 
+import "time"
+
 const (
-	DOF    = "02-01-2006"
+	DOF    = "02/01/2006"
 	TAXPRD = "012006"
 )
 
@@ -51,4 +53,13 @@ func (d GstReturnType) String() string {
 
 func (d GstReturnStatus) String() string {
 	return string(d)
+}
+
+func GetMonthNames() []string {
+	monthNames := []string{}
+	for v := range 12 {
+		monthNames = append(monthNames, time.Month(v).String())
+	}
+
+	return monthNames
 }

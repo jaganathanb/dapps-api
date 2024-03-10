@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jaganathanb/dapps-api/api/helper"
+	scrap_scheduler "github.com/jaganathanb/dapps-api/pkg/scrap-scheduler"
 )
 
 type header struct {
@@ -25,6 +26,35 @@ func NewTestHandler() *TestHandler {
 }
 
 func (h *TestHandler) Test(c *gin.Context) {
+
+	go scrap_scheduler.ScheduleCronJob()
+	// quit, gstCh, returnsCh := gst_scrapper.ScrapGstPortal(s.logger)
+
+	// var wg sync.WaitGroup
+	// wg.Add(1)
+	// go func() {
+	// 	for {
+	// 		select {
+	// 		case gst, ok := <-gstCh:
+	// 			if ok {
+	// 				println(gst)
+	// 			} else {
+	// 				println("Error !")
+	// 			}
+	// 		case returns, ok := <-returnsCh:
+	// 			if ok {
+	// 				println(returns)
+	// 			} else {
+	// 				println("Error !")
+	// 			}
+	// 		case <-quit:
+	// 			wg.Done()
+	// 			return
+	// 		}
+	// 	}
+	// }()
+
+	// wg.Wait()
 
 	c.JSON(http.StatusOK, gin.H{
 		"result": "Test",

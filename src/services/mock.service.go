@@ -1,11 +1,13 @@
 package services
 
 import (
+	"encoding/json"
+	"io"
 	"net/http"
-	"sync"
+	"os"
+	"path/filepath"
 
 	"github.com/jaganathanb/dapps-api/config"
-	gst_scrapper "github.com/jaganathanb/dapps-api/pkg/gst-scrapper"
 	"github.com/jaganathanb/dapps-api/pkg/logging"
 )
 
@@ -23,33 +25,25 @@ func NewMockService(cfg *config.Config) *MockService {
 }
 
 func (s *MockService) GetMockData(fileName string, prop string) (interface{}, error) {
-	quit, gstCh, returnsCh := gst_scrapper.ScrapGstPortal(s.logger)
+	fileHandle, err := os.OpenFile(filepath.Join("data/db/mocks", fileName), os.O_RDONLY, os.ModeDevice)
 
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		for {
-			select {
-			case gst, ok := <-gstCh:
-				if ok {
-					println(gst)
-				} else {
-					println("Error !")
-				}
-			case returns, ok := <-returnsCh:
-				if ok {
-					println(returns)
-				} else {
-					println("Error !")
-				}
-			case <-quit:
-				wg.Done()
-				return
-			}
-		}
-	}()
+	if err != nil {
+		s.logger.Error(logging.Category(logging.IO), logging.SubCategory(logging.OpenFile), err.Error(), nil)
+		return nil, err
+	}
 
-	wg.Wait()
+	defer fileHandle.Close()
 
-	return "", nil
+	fileBytes, err := io.ReadAll(fileHandle)
+
+	if err != nil {
+		s.logger.Error(logging.Category(logging.IO), logging.SubCategory(logging.ReadFile), err.Error(), nil)
+
+		return nil, err
+	}
+
+	var mock map[string]interface{}
+	json.Unmarshal(fileBytes, &mock)
+
+	return mock[prop], nil
 }

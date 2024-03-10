@@ -703,6 +703,35 @@ paths:
       summary: Mock data
       tags:
       - Mock
+  /v{version}/stream:
+    get:
+      consumes:
+      - application/json
+      description: Stream data endpoint
+      parameters:
+      - default: 1
+        description: Version
+        enum:
+        - 1
+        - 2
+        in: path
+        name: version
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "400":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+      summary: Stream data
+      tags:
+      - Stream
   /v1/test/binder/body:
     post:
       consumes:

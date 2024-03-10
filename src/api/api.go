@@ -60,15 +60,18 @@ func RegisterRoutes(r *gin.Engine, cfg *config.Config) {
 
 		mocks := v1.Group("/mocks")
 
+		streamer := v1.Group("/stream")
+
 		// Test
 		routers.Health(health)
 		routers.TestRouter(test_router)
 
-		// User, GST & Mock
+		// User, GST, Mock & Streamer
 		routers.Auth(auth, cfg)
 		routers.Gsts(gsts, cfg)
 		routers.Gst(gst, cfg)
 		routers.Mock(mocks, cfg)
+		routers.Streamer(streamer, cfg)
 
 		r.Static("/static", "./uploads")
 
