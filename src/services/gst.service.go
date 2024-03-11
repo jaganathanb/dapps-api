@@ -44,18 +44,18 @@ func (s *GstService) CreateGsts(req *dto.CreateGstsRequest) (string, error) {
 		return "", err
 	}
 
-	gstins := []string{}
+	gsts := []dto.Gst{}
 	for _, v := range req.Gsts {
 		if slices.Contains(exists, v.Gstin) {
 			s.base.Logger.Warn(logging.Sqlite3, logging.Select, fmt.Sprintf(service_errors.GstExists, v.Gstin), nil)
 		} else {
-			gstins = append(gstins, v.Gstin)
+			gsts = append(gsts, v)
 		}
 	}
 
 	tx := s.base.Database.Begin()
 
-	for _, gst := range req.Gsts {
+	for _, gst := range gsts {
 		err = tx.Create(&models.Gst{
 			Gstin:        gst.Gstin,
 			MobileNumber: gst.MobileNumber,
@@ -73,7 +73,7 @@ func (s *GstService) CreateGsts(req *dto.CreateGstsRequest) (string, error) {
 
 	tx.Commit()
 
-	return fmt.Sprintf("%s gst details already exists. %s gst details entered into the system.", exists, gstins), err
+	return fmt.Sprintf("%s gst details already exists. %s gst details entered into the system.", exists, lo.Map(gsts, func(g dto.Gst, i int) string { return g.Gstin })), err
 }
 
 func processResponses(responses []dto.HttpResponseWrapper) ([]models.Gst, []dto.HttpResponseWrapper) {
