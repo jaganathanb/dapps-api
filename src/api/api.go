@@ -42,6 +42,8 @@ func InitServer(cfg *config.Config) {
 	if err != nil {
 		logger.Fatal(logging.General, logging.Startup, err.Error(), nil)
 	}
+
+	ScheduleCronJobs(cfg)
 }
 
 func RegisterRoutes(r *gin.Engine, cfg *config.Config) {
@@ -64,7 +66,7 @@ func RegisterRoutes(r *gin.Engine, cfg *config.Config) {
 
 		// Test
 		routers.Health(health)
-		routers.TestRouter(test_router)
+		routers.TestRouter(test_router, cfg)
 
 		// User, GST, Mock & Streamer
 		routers.Auth(auth, cfg)
@@ -128,4 +130,10 @@ func RegisterPrometheus() {
 	if err != nil {
 		logger.Error(logging.Prometheus, logging.Startup, err.Error(), nil)
 	}
+}
+
+func ScheduleCronJobs(cfg *config.Config) {
+	// services := services.NewScrapperService(cfg)
+
+	// services.ScrapSite()
 }

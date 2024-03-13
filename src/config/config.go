@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/spf13/viper"
@@ -28,6 +29,13 @@ type ServerConfig struct {
 	GstApiKey    string
 	RunMode      string
 	DB           string
+	Gst          GstServer
+}
+
+type GstServer struct {
+	BaseUrl  string
+	Username string
+	Password string
 }
 
 type LoggerConfig struct {
@@ -102,6 +110,7 @@ type JWTConfig struct {
 
 func GetConfig() *Config {
 	cfgPath := getConfigPath(os.Getenv("APP_ENV"))
+
 	v, err := LoadConfig(cfgPath, "yml")
 	if err != nil {
 		log.Fatalf("Error in load config %v", err)
@@ -139,6 +148,8 @@ func LoadConfig(filename string, fileType string) (*viper.Viper, error) {
 	v.SetConfigName(filename)
 	v.AddConfigPath(".")
 	v.AutomaticEnv()
+
+	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
 	err := v.ReadInConfig()
 	if err != nil {

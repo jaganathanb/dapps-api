@@ -4,6 +4,10 @@ server:
   runMode: release
   gstApikey: '541c70c2-c0c8-47ec-b40e-68990f0fbd07'
   gstBaseUrl: "https://taxpayer.irisgst.com/api/"
+  gst:
+    baseUrl: 'https://services.gst.gov.in/services/login'
+    username: 'CHEE03723G'
+    password: 'SAabc*741'
 logger:
   filePath: logs/
   encoding: json

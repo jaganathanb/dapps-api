@@ -13,7 +13,9 @@
       "preLaunchTask": "swag",
       "cwd": "${workspaceFolder}/src",
       "env": {
-        "APP_ENV": "development"
+        "APP_ENV": "development",
+        "SERVER_GST_USERNAME": "CHEE03723G",
+        "SERVER_GST_PASSWORD": "SAabc*741"
       }
     },
     {

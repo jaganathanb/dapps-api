@@ -3,10 +3,11 @@ package routers
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/jaganathanb/dapps-api/api/handlers"
+	"github.com/jaganathanb/dapps-api/config"
 )
 
-func TestRouter(r *gin.RouterGroup) {
-	h := handlers.NewTestHandler()
+func TestRouter(r *gin.RouterGroup, cfg *config.Config) {
+	h := handlers.NewTestHandler(cfg)
 
 	r.GET("/", h.Test)
 	r.GET("/users", h.Users)

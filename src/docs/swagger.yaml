@@ -761,6 +761,25 @@ paths:
       summary: Stream data
       tags:
       - Stream
+  /v1/test:
+    get:
+      consumes:
+      - application/json
+      description: Test
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "400":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+      summary: Test
+      tags:
+      - Test
   /v1/test/binder/body:
     post:
       consumes:

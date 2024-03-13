@@ -5,7 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jaganathanb/dapps-api/api/helper"
-	scrap_scheduler "github.com/jaganathanb/dapps-api/pkg/scrap-scheduler"
+	"github.com/jaganathanb/dapps-api/config"
+	"github.com/jaganathanb/dapps-api/services"
 )
 
 type header struct {
@@ -19,15 +20,29 @@ type personData struct {
 	MobileNumber string `json:"mobile_number" binding:"required,mobile,min=11,max=11"`
 }
 type TestHandler struct {
+	service *services.ScrapperService
 }
 
-func NewTestHandler() *TestHandler {
-	return &TestHandler{}
+func NewTestHandler(cfg *config.Config) *TestHandler {
+	service := services.NewScrapperService(cfg)
+
+	return &TestHandler{service: service}
 }
 
+// Test godoc
+// @Summary Test
+// @Description Test
+// @Tags Test
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} helper.BaseHttpResponse "Success"
+// @Failure 400 {object} helper.BaseHttpResponse "Failed"
+// @Router /v1/test [get]
 func (h *TestHandler) Test(c *gin.Context) {
 
-	go scrap_scheduler.ScheduleCronJob()
+	h.service.ScrapSite()
+
+	//go scrap_scheduler.ScheduleCronJob()
 	// quit, gstCh, returnsCh := gst_scrapper.ScrapGstPortal(s.logger)
 
 	// var wg sync.WaitGroup
