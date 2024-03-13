@@ -4,8 +4,8 @@ server:
   runMode: release
   gst:
     baseUrl: 'https://services.gst.gov.in/services/login'
-    username: 'CHEE03723G'
-    password: 'SAabc*741'
+    username: ''
+    password: ''
 logger:
   filePath: /app/logs/
   encoding: json

@@ -7,8 +7,8 @@ server:
   gstBaseUrl: "http://localhost:5005/api/v1/"
   gst:
     baseUrl: 'https://services.gst.gov.in/services/login'
-    username: 'CHEE03723G'
-    password: 'SAabc*741'
+    username: ''
+    password: ''
 logger:
   filePath: ../logs/
   encoding: json
