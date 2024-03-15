@@ -277,18 +277,23 @@ func getQuery[T any](filter *dto.DynamicFilter) string {
 				case "greaterThanOrEqual":
 					query = append(query, fmt.Sprintf("%s >= %s", fld.Name, filter.From))
 				case "inRange":
-					if fld.Type.Kind() == reflect.String {
-						query = append(query, fmt.Sprintf("%s >= '%s'", fld.Name, filter.From))
-						query = append(query, fmt.Sprintf("%s <= '%s'", fld.Name, filter.To))
-					} else {
-						query = append(query, fmt.Sprintf("%s >= %s", fld.Name, filter.From))
-						query = append(query, fmt.Sprintf("%s <= %s", fld.Name, filter.To))
-					}
+					query = appendInRange(fld, query, filter)
 				}
 			}
 		}
 	}
 	return strings.Join(query, " AND ")
+}
+
+func appendInRange(fld reflect.StructField, query []string, filter dto.Filter) []string {
+	if fld.Type.Kind() == reflect.String {
+		query = append(query, fmt.Sprintf("%s >= '%s'", fld.Name, filter.From))
+		query = append(query, fmt.Sprintf("%s <= '%s'", fld.Name, filter.To))
+	} else {
+		query = append(query, fmt.Sprintf("%s >= %s", fld.Name, filter.From))
+		query = append(query, fmt.Sprintf("%s <= %s", fld.Name, filter.To))
+	}
+	return query
 }
 
 // getSort

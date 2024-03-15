@@ -14,6 +14,11 @@ type header struct {
 	Browser string
 }
 
+type ScrapResult struct {
+	GstData     map[string]interface{}
+	ReturnsData []interface{}
+}
+
 type personData struct {
 	FirstName    string `json:"first_name" binding:"required,alpha,min=4,max=10"`
 	LastName     string `json:"last_name" binding:"required,alpha,min=6,max=20"`
@@ -40,7 +45,7 @@ func NewTestHandler(cfg *config.Config) *TestHandler {
 // @Router /v1/test [get]
 func (h *TestHandler) Test(c *gin.Context) {
 
-	h.service.ScrapSite()
+	gsts, _ := h.service.ScrapSite()
 
 	//go scrap_scheduler.ScheduleCronJob()
 	// quit, gstCh, returnsCh := gst_scrapper.ScrapGstPortal(s.logger)
@@ -71,10 +76,7 @@ func (h *TestHandler) Test(c *gin.Context) {
 
 	// wg.Wait()
 
-	c.JSON(http.StatusOK, gin.H{
-		"result": "Test",
-	})
-	c.JSON(http.StatusOK, helper.GenerateBaseResponse("Test", true, 0))
+	c.JSON(http.StatusOK, helper.GenerateBaseResponse(gsts, true, 0))
 
 }
 

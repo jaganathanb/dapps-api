@@ -1089,6 +1089,9 @@ const docTemplate = `{
                 "status": {
                     "type": "string"
                 },
+                "taxp": {
+                    "type": "string"
+                },
                 "valid": {
                     "type": "string"
                 }

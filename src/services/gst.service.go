@@ -211,9 +211,9 @@ func getRetPrdFromTaxp(taxp, fy string) string {
 
 	index := lo.IndexOf(currYearMonths, taxp)
 	if index > -1 {
-		return fmt.Sprintf("%s%s", fmt.Sprint(index), years[0])
+		return fmt.Sprintf("%s%s", fmt.Sprintf("%02d", index), years[0])
 	} else {
-		return fmt.Sprintf("%s%s", fmt.Sprint(index), years[1])
+		return fmt.Sprintf("%s%s", fmt.Sprintf("%02d", index), years[1])
 	}
 }
 

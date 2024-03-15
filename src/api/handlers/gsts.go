@@ -11,13 +11,15 @@ import (
 )
 
 type GstsHandler struct {
-	service *services.GstService
+	service         *services.GstService
+	scrapperService *services.ScrapperService
 }
 
 func NewGstsHandler(cfg *config.Config) *GstsHandler {
 	service := services.NewGstService(cfg)
+	scrapperService := services.NewScrapperService(cfg)
 
-	return &GstsHandler{service: service}
+	return &GstsHandler{service: service, scrapperService: scrapperService}
 }
 
 // GetGsts godoc
@@ -64,6 +66,8 @@ func (h *GstsHandler) CreateGsts(c *gin.Context) {
 			helper.GenerateBaseResponseWithValidationError(nil, false, helper.ValidationError, err))
 		return
 	}
+
+	go h.scrapperService.ScrapSite() // Start collecting return status for the added GSTs
 
 	c.JSON(http.StatusCreated, helper.GenerateBaseResponse(msg, true, helper.Success))
 }

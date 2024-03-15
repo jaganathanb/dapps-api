@@ -90,5 +90,5 @@ type GstStatus struct {
 	Status         constants.GstReturnStatus         `json:"status"`
 	Notes          string                            `json:"notes"`
 	PendingReturns sqlite_custom_type.SqliteStrArray `json:"pending_returns,omitempty;type:text[]"`
-	Gstin          string                            `gorm:"type:string;size:30;not null,unique"`
+	Gstin          string                            `gorm:"type:string,not null;size:30"`
 }

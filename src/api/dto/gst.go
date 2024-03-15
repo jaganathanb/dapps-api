@@ -64,6 +64,7 @@ type GstStatus struct {
 	LastFiledDate  string                    `json:"lastFiledDate"`
 	ReturnType     constants.GstReturnType   `json:"returnType"`
 	ReturnPeriod   string                    `json:"returnPeriod"`
+	TaxPrd         string                    `json:"taxp"`
 	Arn            string                    `json:"arn"`
 	Status         constants.GstReturnStatus `json:"status"`
 	Notes          string                    `json:"notes"`

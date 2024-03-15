@@ -1,13 +1,13 @@
 server:
-  internalPort: 5010
-  externalPort: 5010
+  internalPort: 5018
+  externalPort: 5018
   runMode: release
   gstApikey: '541c70c2-c0c8-47ec-b40e-68990f0fbd07'
   gstBaseUrl: "https://taxpayer.irisgst.com/api/"
   gst:
     baseUrl: 'https://services.gst.gov.in/services/login'
-    username: 'CHEE03723G'
-    password: 'SAabc*741'
+    username: ''
+    password: ''
 logger:
   filePath: logs/
   encoding: json
@@ -19,8 +19,18 @@ postgres:
   host: localhost
   port: 5432
   user: postgres
-  password: admin
+  password: ""
   dbName: dapps_db
+  sslMode: disable
+  maxIdleConns: 15
+  maxOpenConns: 100
+  connMaxLifetime: 5
+sqlite3:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: ""
+  dbName: dapps_db.sqlite
   sslMode: disable
   maxIdleConns: 15
   maxOpenConns: 100
@@ -28,7 +38,7 @@ postgres:
 redis:
   host: localhost
   port: 6379
-  password: password
+  password: ""
   db: 0
   dialTimeout: 5
   readTimeout: 5
@@ -48,8 +58,8 @@ otp:
   digits: 6
   limiter: 100
 jwt:
-  secret: "mySecretKey"
-  refreshSecret: "mySecretKey"
+  secret: ""
+  refreshSecret: ""
   accessTokenExpireDuration: 1440
   refreshTokenExpireDuration: 60  
   

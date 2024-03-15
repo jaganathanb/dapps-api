@@ -1,5 +1,5 @@
 server:
-  internalPort: 5000
+  internalPort: 5018
   externalPort: 0
   runMode: release
   gst:
@@ -17,7 +17,7 @@ postgres:
   host: postgres_container
   port: 5432
   user: postgres
-  password: admin
+  password: ""
   dbName: dapps_db
   sslMode: disable
   maxIdleConns: 15
@@ -26,7 +26,7 @@ postgres:
 redis:
   host: redis_container
   port: 6379
-  password: password
+  password: ""
   db: 0
   dialTimeout: 5
   readTimeout: 5
@@ -46,7 +46,7 @@ otp:
   digits: 6
   limiter: 100
 jwt:
-  secret: "mySecretKey"
-  refreshSecret: "mySecretKey"
+  secret: ""
+  refreshSecret: ""
   accessTokenExpireDuration: 60
   refreshTokenExpireDuration: 60

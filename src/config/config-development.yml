@@ -1,10 +1,10 @@
 server:
-  internalPort: 5005
-  externalPort: 5005
+  internalPort: 5018
+  externalPort: 5018
   runMode: debug
   db: 'sqlite3'
   gstApikey: '541c70c2-c0c8-47ec-b40e-68990f0fbd07'
-  gstBaseUrl: "http://localhost:5005/api/v1/"
+  gstBaseUrl: "http://localhost:5018/api/v1/"
   gst:
     baseUrl: 'https://services.gst.gov.in/services/login'
     username: ''
@@ -20,7 +20,7 @@ postgres:
   host: localhost
   port: 5432
   user: postgres
-  password: admin
+  password: ""
   dbName: dapps_db
   sslMode: disable
   maxIdleConns: 15
@@ -30,7 +30,7 @@ sqlite3:
   host: localhost
   port: 5432
   user: postgres
-  password: admin
+  password: ""
   dbName: dapps_db.sqlite
   sslMode: disable
   maxIdleConns: 15
@@ -39,7 +39,7 @@ sqlite3:
 redis:
   host: localhost
   port: 6379
-  password: password
+  password: ""
   db: 0
   dialTimeout: 5
   readTimeout: 5
@@ -59,7 +59,7 @@ otp:
   digits: 6
   limiter: 100
 jwt:
-  secret: "mySecretKey"
-  refreshSecret: "mySecretKey"
+  secret: ""
+  refreshSecret: ""
   accessTokenExpireDuration: 1440
   refreshTokenExpireDuration: 60

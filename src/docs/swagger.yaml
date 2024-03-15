@@ -136,6 +136,8 @@ definitions:
         $ref: '#/definitions/constants.GstReturnType'
       status:
         type: string
+      taxp:
+        type: string
       valid:
         type: string
     type: object
