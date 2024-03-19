@@ -25,6 +25,8 @@ func InitServer(cfg *config.Config) {
 	gin.SetMode(cfg.Server.RunMode)
 	r := gin.New()
 
+	r.SetTrustedProxies(nil)
+
 	RegisterValidators()
 	RegisterPrometheus()
 

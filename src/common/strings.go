@@ -23,7 +23,7 @@ var (
 
 var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
 var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
-var matchGstIn = regexp.MustCompile(`(?m)^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$`)
+var matchGstIn = regexp.MustCompile(`(?m)\d{2}[A-Z]{5}\d{4}[A-Z][\dA-Z]Z[\dA-Z]$`)
 
 func CheckPassword(password string) bool {
 	cfg := config.GetConfig()
@@ -172,9 +172,9 @@ func CheckGstins(gsts []dto.Gst) bool {
 	return len(ids) > 0
 }
 
-func CheckGstin(gst dto.Gst) bool {
+func CheckGstin(gstin string) bool {
 	var ids []string
-	var g = matchGstIn.FindAllString(gst.Gstin, -1)
+	var g = matchGstIn.FindAllString(gstin, -1)
 	if len(g) > 0 {
 		ids = append(ids, g[0])
 	}

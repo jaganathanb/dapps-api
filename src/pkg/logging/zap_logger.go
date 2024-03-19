@@ -2,13 +2,12 @@ package logging
 
 import (
 	"fmt"
+	"os"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/jaganathanb/dapps-api/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 var zapSinLogger *zap.SugaredLogger
@@ -42,23 +41,17 @@ func (l *zapLogger) getLogLevel() zapcore.Level {
 
 func (l *zapLogger) Init() {
 	once.Do(func() {
-		fileName := fmt.Sprintf("%s%s-%s.%s",l.cfg.Logger.FilePath,time.Now().Format("2006-01-02"),uuid.New(),"log")
-		w := zapcore.AddSync(&lumberjack.Logger{
-			Filename:   fileName,
-			MaxSize:    1,
-			MaxAge:     20,
-			LocalTime:  true,
-			MaxBackups: 5,
-			Compress:   true,
-		})
-
+		fileName := fmt.Sprintf("%s%s.%s", l.cfg.Logger.FilePath, time.Now().Format("2006-01-02T030405MST"), "log")
 		config := zap.NewProductionEncoderConfig()
 		config.EncodeTime = zapcore.ISO8601TimeEncoder
-
-		core := zapcore.NewCore(
-			zapcore.NewJSONEncoder(config),
-			w,
-			l.getLogLevel(),
+		fileEncoder := zapcore.NewJSONEncoder(config)
+		//	consoleEncoder := zapcore.NewConsoleEncoder(config)
+		logFile, _ := os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		writer := zapcore.AddSync(logFile)
+		defaultLogLevel := zapcore.DebugLevel
+		core := zapcore.NewTee(
+			zapcore.NewCore(fileEncoder, writer, defaultLogLevel),
+			//zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), defaultLogLevel),
 		)
 
 		logger := zap.New(core, zap.AddCaller(),
@@ -66,7 +59,7 @@ func (l *zapLogger) Init() {
 			zap.AddStacktrace(zapcore.ErrorLevel),
 		).Sugar()
 
-		zapSinLogger = logger.With("AppName", "MyApp", "LoggerName", "Zaplog")
+		zapSinLogger = logger
 	})
 
 	l.logger = zapSinLogger

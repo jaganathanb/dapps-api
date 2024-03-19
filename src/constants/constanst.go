@@ -41,11 +41,19 @@ const (
 type GstReturnStatus string
 
 const (
-	InvoiceCall     = "InvoiceCall"
+	CallForInvoice  = "CallForInvoice"
 	InvoiceReceived = "InvoiceReceived"
 	InvoiceEntry    = "InvoiceEntry"
 	Filed           = "Filed"
 )
+
+const (
+	TaxPayable        = "TaxPayable"
+	CustomerIntimated = "CustomerIntimated"
+	TaxAmountReceived = "TaxAmountReceived"
+)
+
+const REFRESH_GSTS_TABLE = "REFRESH_GSTS_TABLE"
 
 func (d GstReturnType) String() string {
 	return string(d)

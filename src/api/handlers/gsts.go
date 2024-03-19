@@ -60,14 +60,13 @@ func (h *GstsHandler) CreateGsts(c *gin.Context) {
 			helper.GenerateBaseResponseWithValidationError(nil, false, helper.ValidationError, err))
 		return
 	}
+
 	msg, err := h.service.CreateGsts(req)
 	if err != nil {
 		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(err),
 			helper.GenerateBaseResponseWithValidationError(nil, false, helper.ValidationError, err))
 		return
 	}
-
-	go h.scrapperService.ScrapSite() // Start collecting return status for the added GSTs
 
 	c.JSON(http.StatusCreated, helper.GenerateBaseResponse(msg, true, helper.Success))
 }
@@ -85,7 +84,7 @@ func (h *GstsHandler) CreateGsts(c *gin.Context) {
 // @Success 201 {object} helper.BaseHttpResponse "Success"
 // @Failure 400 {object} helper.BaseHttpResponse "Failed"
 // @Failure 409 {object} helper.BaseHttpResponse "Failed"
-// @Router /v{version}/gsts/{gstin}/statuses [put]
+// @Router /v{version}/gsts/{gstin}/return-status [put]
 func (h *GstsHandler) UpdateGstStatus(c *gin.Context) {
 	gstin := c.Params.ByName("gstin")
 	if gstin == "" {

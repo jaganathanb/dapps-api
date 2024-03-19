@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/go-redis/redis/v7"
@@ -23,10 +24,19 @@ type OtpDto struct {
 	Used  bool
 }
 
+var optService *OtpService
+var optServiceOnce sync.Once
+
 func NewOtpService(cfg *config.Config) *OtpService {
-	logger := logging.NewLogger(cfg)
-	redis := cache.GetRedis()
-	return &OtpService{logger: logger, cfg: cfg, redisClient: redis}
+
+	optServiceOnce.Do(func() {
+		logger := logging.NewLogger(cfg)
+		redis := cache.GetRedis()
+
+		optService = &OtpService{logger: logger, cfg: cfg, redisClient: redis}
+	})
+
+	return optService
 }
 
 func (s *OtpService) SetOtp(mobileNumber string, otp string) error {

@@ -17,7 +17,7 @@ func GstinsValidator(fld validator.FieldLevel) bool {
 }
 
 func GstinValidator(fld validator.FieldLevel) bool {
-	value, ok := fld.Field().Interface().(dto.Gst)
+	value, ok := fld.Field().Interface().(string)
 	if !ok {
 		fld.Param()
 		return false

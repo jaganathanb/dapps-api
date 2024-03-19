@@ -1,19 +1,18 @@
 package handlers
 
 import (
-	"errors"
-	"net/http"
+	"io"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jaganathanb/dapps-api/api/helper"
 	"github.com/jaganathanb/dapps-api/config"
-	service_errors "github.com/jaganathanb/dapps-api/pkg/service-errors"
 	"github.com/jaganathanb/dapps-api/services"
 )
 
 type StreamerHandler struct {
 	service *services.StreamerService
 }
+
+type ClientChan chan string
 
 func NewStreamerHandler(cfg *config.Config) *StreamerHandler {
 	service := services.NewStreamerService(cfg)
@@ -28,23 +27,41 @@ func NewStreamerHandler(cfg *config.Config) *StreamerHandler {
 // @Accept  json
 // @Produce  json
 // @Param version path int true "Version" Enums(1, 2) default(1)
-// @Success 200 {object} helper.BaseHttpResponse "Success"
-// @Failure 400 {object} helper.BaseHttpResponse "Failed"
 // @Router /v{version}/stream [get]
 func (h *StreamerHandler) StreamData(c *gin.Context) {
-	res, err := h.service.StreamData("", "")
-
-	if err != nil {
-		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(err),
-			helper.GenerateBaseResponseWithError(nil, false, helper.InternalError, err))
+	v, ok := c.Get("clientChan")
+	if !ok {
 		return
 	}
-
-	if res == nil {
-		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(errors.New(service_errors.GstNotFound)),
-			helper.GenerateBaseResponseWithError(nil, false, helper.InternalError, errors.New(service_errors.GstNotFound)))
+	clientChan, ok := v.(ClientChan)
+	if !ok {
 		return
 	}
+	c.Stream(func(w io.Writer) bool {
+		// Stream message to client from message channel
+		if msg, ok := <-clientChan; ok {
+			c.SSEvent("message", msg)
+			return true
+		}
+		return false
+	})
+}
 
-	c.JSON(http.StatusOK, helper.GenerateBaseResponse(res, true, helper.Success))
+func (h *StreamerHandler) ServeStream() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Initialize client channel
+		clientChan := make(ClientChan)
+
+		// Send new connection to event server
+		h.service.AddClient(clientChan)
+
+		defer func() {
+			// Send closed connection to event server
+			h.service.RemoveClient(clientChan)
+		}()
+
+		c.Set("clientChan", clientChan)
+
+		c.Next()
+	}
 }

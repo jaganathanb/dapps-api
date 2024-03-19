@@ -584,7 +584,7 @@ paths:
       summary: Updates GST lock status
       tags:
       - GSTs
-  /v{version}/gsts/{gstin}/statuses:
+  /v{version}/gsts/{gstin}/return-status:
     put:
       consumes:
       - application/json
@@ -751,15 +751,7 @@ paths:
         type: integer
       produces:
       - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
-        "400":
-          description: Failed
-          schema:
-            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+      responses: {}
       summary: Stream data
       tags:
       - Stream

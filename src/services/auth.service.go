@@ -1,6 +1,8 @@
 package services
 
 import (
+	"sync"
+
 	"github.com/jaganathanb/dapps-api/api/dto"
 	"github.com/jaganathanb/dapps-api/common"
 	"github.com/jaganathanb/dapps-api/config"
@@ -21,17 +23,23 @@ type AuthService struct {
 	database     *gorm.DB
 }
 
-func NewAuthService(cfg *config.Config) *AuthService {
-	database := db.GetDb()
-	logger := logging.NewLogger(cfg)
+var authService *AuthService
+var authServiceOnce sync.Once
 
-	return &AuthService{
-		cfg:          cfg,
-		database:     database,
-		logger:       logger,
-		otpService:   NewOtpService(cfg),
-		tokenService: NewTokenService(cfg),
-	}
+func NewAuthService(cfg *config.Config) *AuthService {
+	authServiceOnce.Do(func() {
+		database := db.GetDb()
+		logger := logging.NewLogger(cfg)
+		authService = &AuthService{
+			cfg:          cfg,
+			database:     database,
+			logger:       logger,
+			otpService:   NewOtpService(cfg),
+			tokenService: NewTokenService(cfg),
+		}
+	})
+
+	return authService
 }
 
 // Login by username

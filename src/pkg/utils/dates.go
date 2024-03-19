@@ -2,6 +2,8 @@ package utils
 
 import "time"
 
+var Months map[string]time.Month = map[string]time.Month{}
+
 func Diff(a, b time.Time) (year, month, day, hour, min, sec int) {
 	if a.Location() != b.Location() {
 		b = b.In(a.Location())
@@ -56,4 +58,11 @@ func StartOfMonth(date time.Time) time.Time {
 func EndOfMonth(date time.Time) time.Time {
 	firstDayOfNextMonth := StartOfMonth(date).AddDate(0, 1, 0)
 	return firstDayOfNextMonth.Add(-time.Second)
+}
+
+func init() {
+	Months = map[string]time.Month{}
+	for i := time.January; i <= time.December; i++ {
+		Months[i.String()] = i
+	}
 }

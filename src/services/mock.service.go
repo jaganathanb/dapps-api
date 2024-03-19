@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/jaganathanb/dapps-api/config"
 	"github.com/jaganathanb/dapps-api/pkg/logging"
@@ -17,11 +18,18 @@ type MockService struct {
 	httpClient http.Client
 }
 
-func NewMockService(cfg *config.Config) *MockService {
-	logger := logging.NewLogger(cfg)
-	client := http.Client{}
+var mockSrvice *MockService
+var mockServiceOnce sync.Once
 
-	return &MockService{logger: logger, cfg: cfg, httpClient: client}
+func NewMockService(cfg *config.Config) *MockService {
+	mockServiceOnce.Do(func() {
+		logger := logging.NewLogger(cfg)
+		client := http.Client{}
+
+		mockSrvice = &MockService{logger: logger, cfg: cfg, httpClient: client}
+	})
+
+	return mockSrvice
 }
 
 func (s *MockService) GetMockData(fileName string, prop string) (interface{}, error) {

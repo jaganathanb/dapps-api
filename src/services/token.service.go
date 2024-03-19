@@ -1,6 +1,7 @@
 package services
 
 import (
+	"sync"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -26,12 +27,20 @@ type tokenDto struct {
 	Roles        []string
 }
 
+var tokenService *TokenService
+var tokenServiceOnce sync.Once
+
 func NewTokenService(cfg *config.Config) *TokenService {
-	logger := logging.NewLogger(cfg)
-	return &TokenService{
-		cfg:    cfg,
-		logger: logger,
-	}
+	tokenServiceOnce.Do(func() {
+		logger := logging.NewLogger(cfg)
+
+		tokenService = &TokenService{
+			cfg:    cfg,
+			logger: logger,
+		}
+	})
+
+	return tokenService
 }
 
 func (s *TokenService) GenerateToken(token *tokenDto) (*dto.TokenDetail, error) {

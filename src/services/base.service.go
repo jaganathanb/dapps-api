@@ -7,6 +7,7 @@ import (
 	"math"
 	"reflect"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/jaganathanb/dapps-api/api/dto"
@@ -32,12 +33,19 @@ type BaseService[T any, Tc any, Tu any, Tr any] struct {
 	Config   *config.Config
 }
 
+var baseService interface{}
+var baseServiceOnce sync.Once
+
 func NewBaseService[T any, Tc any, Tu any, Tr any](cfg *config.Config) *BaseService[T, Tc, Tu, Tr] {
-	return &BaseService[T, Tc, Tu, Tr]{
-		Database: db.GetDb(),
-		Logger:   logging.NewLogger(cfg),
-		Config:   cfg,
-	}
+	baseServiceOnce.Do(func() {
+		baseService = &BaseService[T, Tc, Tu, Tr]{
+			Database: db.GetDb(),
+			Logger:   logging.NewLogger(cfg),
+			Config:   cfg,
+		}
+	})
+
+	return baseService.(*BaseService[T, Tc, Tu, Tr])
 }
 
 func (s *BaseService[T, Tc, Tu, Tr]) Create(ctx context.Context, req *Tc) (*Tr, error) {

@@ -4,8 +4,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jaganathanb/dapps-api/api/dto"
 	"github.com/jaganathanb/dapps-api/api/helper"
 	"github.com/jaganathanb/dapps-api/config"
+	"github.com/jaganathanb/dapps-api/constants"
 	"github.com/jaganathanb/dapps-api/services"
 )
 
@@ -25,13 +27,17 @@ type personData struct {
 	MobileNumber string `json:"mobile_number" binding:"required,mobile,min=11,max=11"`
 }
 type TestHandler struct {
-	service *services.ScrapperService
+	service    *services.StreamerService
+	scrapper   *services.ScrapperService
+	gstService *services.GstService
 }
 
 func NewTestHandler(cfg *config.Config) *TestHandler {
-	service := services.NewScrapperService(cfg)
+	service := services.NewStreamerService(cfg)
+	scrapper := services.NewScrapperService(cfg)
+	gstService := services.NewGstService(cfg)
 
-	return &TestHandler{service: service}
+	return &TestHandler{service: service, scrapper: scrapper, gstService: gstService}
 }
 
 // Test godoc
@@ -44,40 +50,8 @@ func NewTestHandler(cfg *config.Config) *TestHandler {
 // @Failure 400 {object} helper.BaseHttpResponse "Failed"
 // @Router /v1/test [get]
 func (h *TestHandler) Test(c *gin.Context) {
-
-	gsts, _ := h.service.ScrapSite()
-
-	//go scrap_scheduler.ScheduleCronJob()
-	// quit, gstCh, returnsCh := gst_scrapper.ScrapGstPortal(s.logger)
-
-	// var wg sync.WaitGroup
-	// wg.Add(1)
-	// go func() {
-	// 	for {
-	// 		select {
-	// 		case gst, ok := <-gstCh:
-	// 			if ok {
-	// 				println(gst)
-	// 			} else {
-	// 				println("Error !")
-	// 			}
-	// 		case returns, ok := <-returnsCh:
-	// 			if ok {
-	// 				println(returns)
-	// 			} else {
-	// 				println("Error !")
-	// 			}
-	// 		case <-quit:
-	// 			wg.Done()
-	// 			return
-	// 		}
-	// 	}
-	// }()
-
-	// wg.Wait()
-
-	c.JSON(http.StatusOK, helper.GenerateBaseResponse(gsts, true, 0))
-
+	msg, _ := h.gstService.UpdateGstStatus(&dto.UpdateGstReturnStatusRequest{Gstin: "33AARFG1079L1Z0", ReturnType: constants.GSTR1, Status: constants.InvoiceEntry})
+	c.JSON(http.StatusOK, helper.GenerateBaseResponse(msg, true, 0))
 }
 
 func (h *TestHandler) Users(c *gin.Context) {

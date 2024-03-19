@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -62,7 +61,7 @@ func Authorization(validRoles []string) gin.HandlerFunc {
 			return
 		}
 		rolesVal := c.Keys[constants.RolesKey]
-		fmt.Println(rolesVal)
+
 		if rolesVal == nil {
 			c.AbortWithStatusJSON(http.StatusForbidden, helper.GenerateBaseResponse(nil, false, helper.ForbiddenError))
 			return

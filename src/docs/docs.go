@@ -681,7 +681,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v{version}/gsts/{gstin}/statuses": {
+        "/v{version}/gsts/{gstin}/return-status": {
             "put": {
                 "security": [
                     {
@@ -873,20 +873,7 @@ const docTemplate = `{
                         "required": true
                     }
                 ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Failed",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
-                        }
-                    }
-                }
+                "responses": {}
             }
         }
     },
