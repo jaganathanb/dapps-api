@@ -16,6 +16,7 @@ const (
 
 	// Claims
 	AuthorizationHeaderKey string = "Authorization"
+	AuthorizationQueryKey  string = "token"
 	UserIdKey              string = "UserId"
 	FirstNameKey           string = "FirstName"
 	LastNameKey            string = "LastName"

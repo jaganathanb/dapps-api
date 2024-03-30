@@ -12,11 +12,11 @@ import (
 
 var logger = logging.NewLogger(config.GetConfig())
 
-func Up_1() {
+func Up_1(cfg *config.Config) {
 	database := db.GetDb()
 
 	createTables(database)
-	createDefaultUserInformation(database)
+	createDefaultUserInformation(database, cfg)
 }
 
 func createTables(database *gorm.DB) {
@@ -47,7 +47,7 @@ func addNewTable(database *gorm.DB, model interface{}, tables []interface{}) []i
 	return tables
 }
 
-func createDefaultUserInformation(database *gorm.DB) {
+func createDefaultUserInformation(database *gorm.DB, cfg *config.Config) {
 
 	adminRole := models.Role{Name: constants.AdminRoleName}
 	createRoleIfNotExists(database, &adminRole)
@@ -55,14 +55,16 @@ func createDefaultUserInformation(database *gorm.DB) {
 	defaultRole := models.Role{Name: constants.DefaultRoleName}
 	createRoleIfNotExists(database, &defaultRole)
 
-	u := models.User{Username: constants.DefaultUserName, FirstName: "Test", LastName: "Test",
-		MobileNumber: "09111112222", Email: "admin@admin.com"}
-	pass := "12345678"
+	u := models.User{Username: cfg.Server.Username, FirstName: "", LastName: "",
+		MobileNumber: "09111112222", Email: cfg.Server.Username}
+	pass := cfg.Server.Password
+
+	logger.Infof("Verifying user %s, if exists, it will not create.", u.Username)
+
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.DefaultCost)
 	u.Password = string(hashedPassword)
 
 	createAdminUserIfNotExists(database, &u, adminRole.Id)
-
 }
 
 func createRoleIfNotExists(database *gorm.DB, r *models.Role) {

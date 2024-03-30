@@ -3,6 +3,7 @@ package logging
 import (
 	"fmt"
 	"os"
+	"path"
 	"time"
 
 	"github.com/jaganathanb/dapps-api/config"
@@ -41,7 +42,7 @@ func (l *zapLogger) getLogLevel() zapcore.Level {
 
 func (l *zapLogger) Init() {
 	once.Do(func() {
-		fileName := fmt.Sprintf("%s%s.%s", l.cfg.Logger.FilePath, time.Now().Format("2006-01-02T030405MST"), "log")
+		fileName := path.Join(l.cfg.Logger.FilePath, fmt.Sprintf("%s.log", time.Now().Format("2006-01-02T030405MST")))
 		config := zap.NewProductionEncoderConfig()
 		config.EncodeTime = zapcore.ISO8601TimeEncoder
 		fileEncoder := zapcore.NewJSONEncoder(config)

@@ -8,19 +8,19 @@
     },
     {
       "label": "go build",
-      "command": "cd src && go build -v -o server.exe ./cmd/main.go",
+      "command": "cd src && go build -v -o DApps.WebApi.exe ./cmd/main.go",
       "type": "shell",
       "dependsOn": "swag"
     },
     {
       "label": "go run",
-      "command": "cd src && ./server.exe",
+      "command": "cd src && ./DApps.WebApi.exe",
       "type": "shell",
       "dependsOn": "go build"
     },
     {
       "label": "go air",
-      "command": "cd src && air --build.cmd 'go build -v -o server.exe ./cmd/main.go' --build.bin 'server.exe'",
+      "command": "cd src && air --build.cmd 'go build -v -o DApps.WebApi.exe ./cmd/main.go' --build.bin 'DApps.WebApi.exe'",
       "type": "shell",
       "dependsOn": "swag",
       "problemMatcher": []

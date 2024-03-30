@@ -11,7 +11,7 @@ func Gsts(router *gin.RouterGroup, cfg *config.Config) {
 	h := handlers.NewGstsHandler(cfg)
 
 	if cfg.Server.RunMode == "release" {
-		router.Use(middlewares.Authentication(cfg), middlewares.Authorization([]string{"admin"}))
+		router.Use(middlewares.Authentication(cfg), middlewares.Authorization([]string{"admin", "default"}))
 	}
 
 	router.POST("/create", h.CreateGsts)
@@ -22,7 +22,7 @@ func Gst(router *gin.RouterGroup, cfg *config.Config) {
 	h := handlers.NewGstsHandler(cfg)
 
 	if cfg.Server.RunMode == "release" {
-		router.Use(middlewares.Authentication(cfg), middlewares.Authorization([]string{"admin"}))
+		router.Use(middlewares.Authentication(cfg), middlewares.Authorization([]string{"admin", "default"}))
 	}
 
 	router.PUT("/return-status", h.UpdateGstStatus)

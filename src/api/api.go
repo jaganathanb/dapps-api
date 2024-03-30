@@ -40,6 +40,7 @@ func InitServer(cfg *config.Config) {
 
 	logger := logging.NewLogger(cfg)
 	logger.Info(logging.General, logging.Startup, "Started", nil)
+
 	err := r.Run(fmt.Sprintf(":%s", cfg.Server.InternalPort))
 	if err != nil {
 		logger.Fatal(logging.General, logging.Startup, err.Error(), nil)

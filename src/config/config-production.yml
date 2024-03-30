@@ -1,20 +1,20 @@
 server:
-  internalPort: 5018
-  externalPort: 5018
+  internalPort: ${Deploy:Port}
+  externalPort: ${Deploy:Port}
   runMode: release
-  gstApikey: '541c70c2-c0c8-47ec-b40e-68990f0fbd07'
-  gstBaseUrl: "https://taxpayer.irisgst.com/api/"
+  username: ${Deploy:Username}
+  password: ${Deploy:Password}
   gst:
     baseUrl: 'https://services.gst.gov.in/services/login'
-    username: ''
-    password: ''
+    username: 
+    password: 
 logger:
-  filePath: logs/
+  filePath: ${Deploy:RootFolder}
   encoding: json
   level: debug
   logger: zap
 cors:
-  allowOrigins: "*"
+  allowOrigins: "${Deploy:Cors}"
 postgres:
   host: localhost
   port: 5432
@@ -30,7 +30,7 @@ sqlite3:
   port: 5432
   user: postgres
   password: ""
-  dbName: dapps_db.sqlite
+  dbName: "${Deploy:DbPath}\\dapps_gst.db"
   sslMode: disable
   maxIdleConns: 15
   maxOpenConns: 100
@@ -58,8 +58,8 @@ otp:
   digits: 6
   limiter: 100
 jwt:
-  secret: ""
-  refreshSecret: ""
+  secret: ${Deploy:JwtSecret}
+  refreshSecret: ${Deploy:JwtSecret}
   accessTokenExpireDuration: 1440
   refreshTokenExpireDuration: 60  
   

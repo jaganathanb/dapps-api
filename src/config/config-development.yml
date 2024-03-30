@@ -1,6 +1,6 @@
 server:
-  internalPort: 5018
-  externalPort: 5018
+  internalPort: 
+  externalPort: 
   runMode: debug
   db: 'sqlite3'
   gstApikey: '541c70c2-c0c8-47ec-b40e-68990f0fbd07'
@@ -31,7 +31,7 @@ sqlite3:
   port: 5432
   user: postgres
   password: ""
-  dbName: dapps_db.sqlite
+  dbName: C:\DhuruvahApps\Data\dapps_gst.db
   sslMode: disable
   maxIdleConns: 15
   maxOpenConns: 100

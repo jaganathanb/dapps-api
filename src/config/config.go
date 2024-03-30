@@ -29,6 +29,8 @@ type ServerConfig struct {
 	GstApiKey    string
 	RunMode      string
 	DB           string
+	Username     string
+	Password     string
 	Gst          GstServer
 }
 

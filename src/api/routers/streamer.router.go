@@ -11,7 +11,7 @@ func Streamer(router *gin.RouterGroup, cfg *config.Config) {
 	handler := handlers.NewStreamerHandler(cfg)
 
 	if cfg.Server.RunMode == "release" {
-		router.Use(middlewares.Authentication(cfg), middlewares.Authorization([]string{"admin"}))
+		router.Use(middlewares.AuthenticationByQueryString(cfg), middlewares.Authorization([]string{"admin", "default"}))
 	}
 
 	router.GET("/", middlewares.StreamerHeaders(), handler.ServeStream(), handler.StreamData)
