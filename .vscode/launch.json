@@ -14,17 +14,17 @@
       "cwd": "${workspaceFolder}/src",
       "env": {
         "APP_ENV": "development",
-        "SERVER_GST_USERNAME": "CHEE03723G",
-        "SERVER_GST_PASSWORD": "SAabc*741",
-        "JWT_SECRET": "mySecretKey",
-        "JWT_REFRESHSECRET": "mySecretKey",
-        "SQLITE3_PASSWORD": "admin",
-        "POSTGRES_PASSWORD": "admin",
-        "REDIS_PASSWORD": "admin",
+        "SERVER_GST_USERNAME": "",
+        "SERVER_GST_PASSWORD": "",
+        "JWT_SECRET": "",
+        "JWT_REFRESHSECRET": "",
+        "SQLITE3_PASSWORD": "",
+        "POSTGRES_PASSWORD": "",
+        "REDIS_PASSWORD": "",
         "SERVER_INTERNALPORT": "8070",
         "SERVER_EXTERNALPORT": "8070",
         "SERVER_USERNAME": "admin@admin.com",
-        "SERVER_PASSWORD": "Password@123"
+        "SERVER_PASSWORD": ""
       }
     },
     {
