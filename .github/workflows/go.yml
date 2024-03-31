@@ -22,3 +22,13 @@ jobs:
 
       - name: Build
         run: cd src && go mod download && go build -v -o DApps.WebApi.exe cmd/main.go
+
+      - name: Add generated binary to artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: dapps-webapi-build
+          path: |
+            ./src/DApps.WebApi.exe
+            ./src/config/config-production.yml
+          if-no-files-found: error
+        if: always()
