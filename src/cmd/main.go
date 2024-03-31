@@ -12,8 +12,8 @@ import (
 // @in header
 // @name Authorization
 func main() {
-
 	cfg := config.GetConfig()
+
 	logger := logging.NewLogger(cfg)
 
 	// err := cache.InitRedis(cfg)

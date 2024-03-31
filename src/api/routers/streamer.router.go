@@ -14,5 +14,5 @@ func Streamer(router *gin.RouterGroup, cfg *config.Config) {
 		router.Use(middlewares.AuthenticationByQueryString(cfg), middlewares.Authorization([]string{"admin", "default"}))
 	}
 
-	router.GET("/", middlewares.StreamerHeaders(), handler.ServeStream(), handler.StreamData)
+	router.GET("/", middlewares.StreamerHeaders(cfg), handler.ServeStream(), handler.StreamData)
 }

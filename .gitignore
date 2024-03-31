@@ -25,3 +25,6 @@ go.work
 __debug_bin
 */cmd/uploads
 *.sqlite
+*/config-development.yml
+*/launch.json
+*.mp3
