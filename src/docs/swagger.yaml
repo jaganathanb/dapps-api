@@ -116,6 +116,19 @@ definitions:
       type:
         type: string
     type: object
+  github_com_jaganathanb_dapps-api_api_dto.GstFiledCount:
+    properties:
+      gstr1Count:
+        type: integer
+      gstr2Count:
+        type: integer
+      gstr3bCount:
+        type: integer
+      gstr9Count:
+        type: integer
+      totalGsts:
+        type: integer
+    type: object
   github_com_jaganathanb_dapps-api_api_dto.GstStatus:
     properties:
       arn:
@@ -668,6 +681,83 @@ paths:
       security:
       - AuthBearer: []
       summary: Gets GST
+      tags:
+      - GSTs
+  /v{version}/gsts/refresh-returns:
+    get:
+      consumes:
+      - application/json
+      description: Refreshes the gst returns who are in state `EntryDone` or there
+        is no returns yet
+      parameters:
+      - default: 1
+        description: Version
+        enum:
+        - 1
+        - 2
+        in: path
+        name: version
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "400":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "409":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+      security:
+      - AuthBearer: []
+      summary: Refreshes GST returns
+      tags:
+      - GSTs
+  /v{version}/gsts/statistics:
+    get:
+      consumes:
+      - application/json
+      description: Gets no of gsts filed for all the return types for current last
+        tax period
+      parameters:
+      - default: 1
+        description: Version
+        enum:
+        - 1
+        - 2
+        in: path
+        name: version
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+            - properties:
+                result:
+                  $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.GstFiledCount'
+              type: object
+        "400":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "409":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+      security:
+      - AuthBearer: []
+      summary: Gets GST statistics
       tags:
       - GSTs
   /v{version}/health/:

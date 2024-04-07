@@ -16,6 +16,8 @@ func Gsts(router *gin.RouterGroup, cfg *config.Config) {
 
 	router.POST("/create", h.CreateGsts)
 	router.POST("/page", h.GetGsts)
+	router.GET("/statistics", h.GetGstStatistics)
+	router.GET("/refresh-returns", h.RefreshGstReturns)
 }
 
 func Gst(router *gin.RouterGroup, cfg *config.Config) {

@@ -151,6 +151,34 @@ func (s *GstService) LockGstById(req *dto.UpdateGstLockStatusRequest) (bool, err
 	return true, nil
 }
 
+func (s *GstService) GetGstStatistics() (dto.GstFiledCount, error) {
+	var totalGstsCount int64
+	s.base.Database.Model(&models.Gst{}).Where("locked = ?", false).Count(&totalGstsCount)
+
+	var gstFiledCount dto.GstFiledCount
+
+	err := s.base.Database.Model(&models.GstStatus{}).
+		Select(
+			"COUNT(CASE WHEN status = 'Filed' AND rtntype = 'GSTR1' THEN 1 END) AS GSTR1Count, " +
+				"COUNT(CASE WHEN status = 'Filed' AND rtntype = 'GSTR3B' THEN 1 END) AS GSTR2Count, " +
+				"COUNT(CASE WHEN status = 'Filed' AND rtntype = 'GSTR2' THEN 1 END) AS GSTR3BCount, " +
+				"COUNT(CASE WHEN status = 'Filed' AND rtntype = 'GSTR9' THEN 1 END) AS GSTR9Count").
+		Scan(&gstFiledCount).Error
+
+	gstFiledCount.TotalGsts = totalGstsCount
+
+	return gstFiledCount, err
+}
+
+func (s *GstService) RefreshGstReturns() error {
+	if s.base.Config.Server.Gst.Username == "" || s.base.Config.Server.Gst.Password == "" {
+		return fmt.Errorf("GST Server login details are not correct!")
+	}
+	go s.scrapGstPortal()
+
+	return nil
+}
+
 func (s *GstService) isGstExistsInSystem(gstin string) (bool, error) {
 	var exists bool
 	if err := s.base.Database.Model(&models.Gst{}).
@@ -226,7 +254,7 @@ func (s *GstService) scrapGstPortal() {
 			}
 		}()
 
-		fmt.Printf("Totla records: %d", len(gsts))
+		fmt.Printf("Total records: %d", len(gsts))
 
 		s.base.Logger.Infof("Job scheduled to update %d GSTs", len(gsts))
 	} else {

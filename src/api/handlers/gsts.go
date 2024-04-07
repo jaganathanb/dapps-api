@@ -153,3 +153,50 @@ func (h *GstsHandler) LockGstById(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, helper.GenerateBaseResponse(ok, true, helper.Success))
 }
+
+// GetGstStatistics godoc
+// @Summary Gets GST statistics
+// @Description Gets no of gsts filed for all the return types for current last tax period
+// @Tags GSTs
+// @Accept  json
+// @Produce  json
+// @Security AuthBearer
+// @Param version path int true "Version" Enums(1, 2) default(1)
+// @Success 200 {object} helper.BaseHttpResponse{result=dto.GstFiledCount} "Success"
+// @Failure 400 {object} helper.BaseHttpResponse "Failed"
+// @Failure 409 {object} helper.BaseHttpResponse "Failed"
+// @Router /v{version}/gsts/statistics [get]
+func (h *GstsHandler) GetGstStatistics(c *gin.Context) {
+	statistics, err := h.service.GetGstStatistics()
+	if err != nil {
+		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(err),
+			helper.GenerateBaseResponseWithError(nil, false, helper.InternalError, err))
+		return
+	}
+
+	c.JSON(http.StatusOK, helper.GenerateBaseResponse(statistics, true, helper.Success))
+}
+
+// RefreshGstReturns godoc
+// @Summary Refreshes GST returns
+// @Description Refreshes the gst returns who are in state `EntryDone` or there is no returns yet
+// @Tags GSTs
+// @Accept  json
+// @Produce  json
+// @Security AuthBearer
+// @Param version path int true "Version" Enums(1, 2) default(1)
+// @Success 200 {object} helper.BaseHttpResponse "Success"
+// @Failure 400 {object} helper.BaseHttpResponse "Failed"
+// @Failure 409 {object} helper.BaseHttpResponse "Failed"
+// @Router /v{version}/gsts/refresh-returns [get]
+func (h *GstsHandler) RefreshGstReturns(c *gin.Context) {
+	err := h.service.RefreshGstReturns()
+
+	if err != nil {
+		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(err),
+			helper.GenerateBaseResponseWithError(nil, false, helper.InternalError, err))
+		return
+	}
+
+	c.JSON(http.StatusOK, helper.GenerateBaseResponse(nil, true, helper.Success))
+}

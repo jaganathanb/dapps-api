@@ -18,6 +18,14 @@ type GetGstResponse = Gst
 
 type GetGstsResponse = []GetGstResponse
 
+type GstFiledCount struct {
+	GSTR1Count  int64 `json:"gstr1Count"`
+	GSTR3BCount int64 `json:"gstr3bCount"`
+	GSTR2Count  int64 `json:"gstr2Count"`
+	GSTR9Count  int64 `json:"gstr9Count"`
+	TotalGsts   int64 `json:"totalGsts"`
+}
+
 type UpdateGstReturnStatusRequest struct {
 	Gstin      string                    `json:"gstin" binding:"required,gstin"`
 	ReturnType constants.GstReturnType   `json:"returnType"`

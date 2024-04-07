@@ -10,5 +10,15 @@
     "editor.codeActionsOnSave": {
       "source.organizeImports": "always"
     }
-  }
+  },
+  "cSpell.words": [
+    "godoc",
+    "gstin",
+    "gstins",
+    "GSTR",
+    "gsts",
+    "rtntype",
+    "taxp",
+    "TAXPRD"
+  ]
 }
