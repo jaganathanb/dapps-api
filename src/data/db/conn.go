@@ -2,7 +2,9 @@ package db
 
 import (
 	"fmt"
+	"io/fs"
 	"log"
+	"os"
 	"path"
 	"time"
 
@@ -38,6 +40,12 @@ func InitDb(cfg *config.Config) error {
 		sqlDb.SetConnMaxLifetime(cfg.Postgres.ConnMaxLifetime * time.Minute)
 
 	default:
+		err := os.MkdirAll(cfg.Sqlite3.DbName, fs.ModeDir)
+
+		if err != nil {
+			return err
+		}
+
 		cnn := path.Join(cfg.Sqlite3.DbName, "dapps_gst.db")
 
 		dbClient, err = gorm.Open(sqlite.Open(cnn), &gorm.Config{})
