@@ -30,7 +30,7 @@ sqlite3:
   port: 5432
   user: postgres
   password: ""
-  dbName: "${Deploy:DbPath}\\dapps_gst.db"
+  dbName: "${Deploy:DbPath}"
   sslMode: disable
   maxIdleConns: 15
   maxOpenConns: 100

@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 	"log"
+	"path"
 	"time"
 
 	"github.com/jaganathanb/dapps-api/config"
@@ -37,7 +38,7 @@ func InitDb(cfg *config.Config) error {
 		sqlDb.SetConnMaxLifetime(cfg.Postgres.ConnMaxLifetime * time.Minute)
 
 	default:
-		cnn := cfg.Sqlite3.DbName
+		cnn := path.Join(cfg.Sqlite3.DbName, "dapps_gst.db")
 
 		dbClient, err = gorm.Open(sqlite.Open(cnn), &gorm.Config{})
 		if err != nil {
