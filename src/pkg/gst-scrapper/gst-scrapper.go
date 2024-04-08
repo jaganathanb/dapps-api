@@ -57,7 +57,15 @@ func (s *GstScrapper) ScrapGstPortal(gstins []string) <-chan GstDetail {
 
 	l := launcher.New().Headless(true).Devtools(false).Leakless(false)
 	browser := rod.New().ControlURL(l.MustLaunch()).MustConnect().SlowMotion(time.Second * 1)
-	page := browser.MustPage(s.cfg.Server.Gst.BaseUrl).MustWindowMaximize()
+	page, err := browser.Page(proto.TargetCreateTarget{URL: s.cfg.Server.Gst.BaseUrl})
+
+	if err != nil {
+		s.logger.Error(logging.Category(logging.ExternalService), logging.SubCategory(logging.IO), "Something went wrong!. Check internet connection too!", nil)
+
+		quit <- GstDetail{}
+	}
+
+	page.MustWindowMaximize()
 
 	landed := make(chan bool)
 	go s.listenOnCaptchaEvents(page, quit, landed)()

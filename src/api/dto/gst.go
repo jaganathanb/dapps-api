@@ -38,7 +38,7 @@ type UpdateGstLockStatusRequest struct {
 }
 
 type RemoveGstRequest struct {
-	Gstin string `json:"gstin" binding:"required,max=15"`
+	Gstin string `json:"gstin" binding:"required,gstin"`
 }
 
 type Gst struct {

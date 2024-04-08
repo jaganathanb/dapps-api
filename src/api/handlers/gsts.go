@@ -154,6 +154,40 @@ func (h *GstsHandler) LockGstById(c *gin.Context) {
 	c.JSON(http.StatusCreated, helper.GenerateBaseResponse(ok, true, helper.Success))
 }
 
+// DeleteGstById godoc
+// @Summary Deletes GST by id
+// @Description Deletes the given GST from system
+// @Tags GSTs
+// @Accept  json
+// @Produce  json
+// @Security AuthBearer
+// @Param version path int true "Version" Enums(1, 2) default(1)
+// @Param gstin path string true "Gstin"
+// @Success 200 {object} helper.BaseHttpResponse "Success"
+// @Failure 400 {object} helper.BaseHttpResponse "Failed"
+// @Failure 409 {object} helper.BaseHttpResponse "Failed"
+// @Router /v{version}/gsts/{gstin} [delete]
+func (h *GstsHandler) DeleteGstById(c *gin.Context) {
+	gstin := c.Params.ByName("gstin")
+	if gstin == "" {
+		c.AbortWithStatusJSON(http.StatusNotFound,
+			helper.GenerateBaseResponse(nil, false, helper.ValidationError))
+		return
+	}
+
+	req := new(dto.RemoveGstRequest)
+	req.Gstin = gstin
+
+	ok, err := h.service.DeleteGstById(req)
+	if err != nil {
+		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(err),
+			helper.GenerateBaseResponseWithError(nil, false, helper.InternalError, err))
+		return
+	}
+
+	c.JSON(http.StatusOK, helper.GenerateBaseResponse(ok, true, helper.Success))
+}
+
 // GetGstStatistics godoc
 // @Summary Gets GST statistics
 // @Description Gets no of gsts filed for all the return types for current last tax period

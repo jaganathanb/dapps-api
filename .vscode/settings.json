@@ -12,11 +12,14 @@
     }
   },
   "cSpell.words": [
+    "Captch",
     "godoc",
+    "gorm",
     "gstin",
     "gstins",
     "GSTR",
     "gsts",
+    "Leakless",
     "rtntype",
     "taxp",
     "TAXPRD"

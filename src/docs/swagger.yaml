@@ -551,6 +551,46 @@ paths:
       summary: Creates GSTs
       tags:
       - GSTs
+  /v{version}/gsts/{gstin}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes the given GST from system
+      parameters:
+      - default: 1
+        description: Version
+        enum:
+        - 1
+        - 2
+        in: path
+        name: version
+        required: true
+        type: integer
+      - description: Gstin
+        in: path
+        name: gstin
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "400":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "409":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+      security:
+      - AuthBearer: []
+      summary: Deletes GST by id
+      tags:
+      - GSTs
   /v{version}/gsts/{gstin}/lock:
     put:
       consumes:

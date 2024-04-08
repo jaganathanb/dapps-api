@@ -42,6 +42,8 @@ func (l *zapLogger) getLogLevel() zapcore.Level {
 
 func (l *zapLogger) Init() {
 	once.Do(func() {
+		os.MkdirAll(l.cfg.Logger.FilePath, os.ModeDir)
+
 		fileName := path.Join(l.cfg.Logger.FilePath, fmt.Sprintf("%s.log", time.Now().Format("2006-01-02T030405MST")))
 		config := zap.NewProductionEncoderConfig()
 		config.EncodeTime = zapcore.ISO8601TimeEncoder

@@ -151,6 +151,44 @@ func (s *GstService) LockGstById(req *dto.UpdateGstLockStatusRequest) (bool, err
 	return true, nil
 }
 
+func (s *GstService) DeleteGstById(req *dto.RemoveGstRequest) (bool, error) {
+	exists, err := s.isGstExistsInSystem(req.Gstin)
+	if err != nil {
+		return false, err
+	}
+	if !exists {
+		return false, &service_errors.ServiceError{EndUserMessage: fmt.Sprintf(service_errors.GstNotFound, req.Gstin)}
+	}
+
+	tx := s.base.Database.Begin()
+
+	err = tx.Model(&models.GstStatus{}).Where("gstin = ?", req.Gstin).Delete(&models.GstStatus{Gstin: req.Gstin}).Error
+	if err != nil {
+		tx.Rollback()
+		s.base.Logger.Error(logging.Sqlite3, logging.Rollback, err.Error(), nil)
+		return false, err
+	}
+
+	gst := &models.Gst{}
+	err = tx.Model(&models.Gst{}).Where("gstin = ?", req.Gstin).Find(gst).Error
+	if err != nil {
+		tx.Rollback()
+		s.base.Logger.Error(logging.Sqlite3, logging.Rollback, err.Error(), nil)
+		return false, err
+	}
+
+	err = tx.Delete(gst).Error
+	if err != nil {
+		tx.Rollback()
+		s.base.Logger.Error(logging.Sqlite3, logging.Rollback, err.Error(), nil)
+		return false, err
+	}
+
+	tx.Commit()
+
+	return true, nil
+}
+
 func (s *GstService) GetGstStatistics() (dto.GstFiledCount, error) {
 	var totalGstsCount int64
 	s.base.Database.Model(&models.Gst{}).Where("locked = ?", false).Count(&totalGstsCount)
