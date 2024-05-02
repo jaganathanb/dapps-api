@@ -13,6 +13,17 @@
       "dependsOn": "swag"
     },
     {
+      "label": "Build for 64/32",
+      "type": "shell",
+      "command": "& bash ${workspaceFolder}\\build.sh",
+      "problemMatcher": [],
+      "options": {
+        "shell": {
+          "executable": "C:\\Program Files\\Git\\git-bash.exe"
+        }
+      }
+  },
+    {
       "label": "go run",
       "command": "cd src && ./DApps.WebApi.exe",
       "type": "shell",
