@@ -1,4 +1,4 @@
-bin_name='DAppsWebApi'  # Change the binary name as desired
+bin_name='DApps.WebApi'  # Change the binary name as desired
 cd src/cmd
 
 archs=("386" "amd64")
