@@ -17,6 +17,7 @@ func Up_1(cfg *config.Config) {
 
 	createTables(database)
 	createDefaultUserInformation(database, cfg)
+	createOrUpdateSettings(database, cfg)
 }
 
 func createTables(database *gorm.DB) {
@@ -31,6 +32,8 @@ func createTables(database *gorm.DB) {
 	tables = addNewTable(database, models.Address{}, tables)
 	tables = addNewTable(database, models.PermenantAddress{}, tables)
 	tables = addNewTable(database, models.GstStatus{}, tables)
+	tables = addNewTable(database, models.Settings{}, tables)
+	tables = addNewTable(database, models.Notifications{}, tables)
 
 	err := database.Migrator().CreateTable(tables...)
 	if err != nil {
@@ -65,6 +68,39 @@ func createDefaultUserInformation(database *gorm.DB, cfg *config.Config) {
 	u.Password = string(hashedPassword)
 
 	createAdminUserIfNotExists(database, &u, adminRole.Id)
+}
+
+func createOrUpdateSettings(database *gorm.DB, cfg *config.Config) {
+	settings := models.Settings{}
+
+	err := database.
+		Model(&models.Settings{}).
+		Where("deleted_at is null").
+		FirstOrInit(&settings).Error
+
+	if err == nil {
+		if cfg.Server.Gst.Username != "" {
+			settings.GstUsername = cfg.Server.Gst.Username
+		}
+
+		if cfg.Server.Gst.Password != "" {
+			settings.GstPassword = cfg.Server.Gst.Password
+		}
+
+		if cfg.Server.Gst.BaseUrl != "" {
+			settings.GstBaseUrl = cfg.Server.Gst.BaseUrl
+		}
+
+		if cfg.Server.Gst.Crontab != "" {
+			settings.Crontab = cfg.Server.Gst.Crontab
+		}
+
+		if settings.Id == 0 {
+			database.Create(&settings)
+		} else {
+			database.Updates(&settings)
+		}
+	}
 }
 
 func createRoleIfNotExists(database *gorm.DB, r *models.Role) {

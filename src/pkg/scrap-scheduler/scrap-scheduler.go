@@ -1,50 +1,66 @@
 package scrap_scheduler
 
 import (
-	"fmt"
-	"time"
+	"sync"
 
 	"github.com/go-co-op/gocron/v2"
 	"github.com/google/uuid"
+	"github.com/jaganathanb/dapps-api/config"
+	"github.com/jaganathanb/dapps-api/pkg/logging"
 )
 
-func ScheduleCronJob() {
-	// create a scheduler
-	s, _ := gocron.NewScheduler()
+type DAppsJobScheduler struct {
+	logger       logging.Logger
+	cfg          *config.Config
+	scheduler    gocron.Scheduler
+	shutdownChan <-chan string
+}
 
-	job, _ := s.NewJob(
-		gocron.DailyJob(
-			1,
-			gocron.NewAtTimes(
-				gocron.NewAtTime(10, 30, 0),
-			),
-		),
-		gocron.NewTask(
-			func(a, b string) {
-				fmt.Printf("Job run with param %s, %s", a, b)
-			},
-			"a",
-			"b",
-		),
-		gocron.WithEventListeners(
-			gocron.AfterJobRuns(
-				func(jobID uuid.UUID, jobName string) {
-					fmt.Println(jobID)
-				},
-			),
-		),
-	)
+type scrapper func()
 
-	// start the scheduler
-	s.Start()
+var jobScheduler *DAppsJobScheduler
+var jobSchedulerOnce sync.Once
 
-	job.RunNow()
+func NewDAppsJobScheduler(cfg *config.Config) *DAppsJobScheduler {
+	jobSchedulerOnce.Do(func() {
+		s, _ := gocron.NewScheduler()
+
+		jobScheduler = &DAppsJobScheduler{
+			logger:    logging.NewLogger(cfg),
+			cfg:       cfg,
+			scheduler: s,
+		}
+
+		go jobScheduler.start()
+	})
+
+	return jobScheduler
+}
+
+func (s *DAppsJobScheduler) start() {
+	jobScheduler.scheduler.Start()
 
 	// block until you are ready to shut down
-	select {
-	case <-time.After(time.Minute):
+	select {}
+}
+
+func (s *DAppsJobScheduler) RemoveJobs(tag string) {
+	s.scheduler.RemoveByTags(tag)
+}
+
+func (s *DAppsJobScheduler) AddJob(crontab string, tag string, cb scrapper) (string, error) {
+	job, err := s.scheduler.NewJob(
+		gocron.CronJob(crontab, false),
+		gocron.NewTask(cb),
+		gocron.WithTags(tag),
+		gocron.WithEventListeners(gocron.BeforeJobRuns(func(jobID uuid.UUID, jobName string) {
+			s.logger.Infof("Job %s started with name %s", jobID, jobName)
+		})),
+	)
+
+	if err != nil {
+		return "", err
 	}
 
-	fmt.Println("Shutting down...")
-	_ = s.Shutdown()
+	return job.ID().String(), err
 }

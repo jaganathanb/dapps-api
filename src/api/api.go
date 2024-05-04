@@ -65,6 +65,10 @@ func RegisterRoutes(r *gin.Engine, cfg *config.Config) {
 
 		streamer := v1.Group("/stream")
 
+		settings := v1.Group("/settings")
+
+		notifications := v1.Group("/notifications")
+
 		// Test
 		routers.Health(health)
 		routers.TestRouter(test_router, cfg)
@@ -75,6 +79,8 @@ func RegisterRoutes(r *gin.Engine, cfg *config.Config) {
 		routers.Gst(gst, cfg)
 		routers.Mock(mocks, cfg)
 		routers.Streamer(streamer, cfg)
+		routers.Settings(settings, cfg)
+		routers.Notifications(notifications, cfg)
 
 		r.Static("/static", "./uploads")
 

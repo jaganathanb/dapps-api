@@ -6,8 +6,9 @@ server:
   password: ${Deploy:Password}
   gst:
     baseUrl: 'https://services.gst.gov.in/services/login'
-    username: 
-    password: 
+    username: ${Deploy:GstUsername}
+    password: ${Deploy:GstPassword}
+    crontab: "0 10 * * *"
 logger:
   filePath: ${Deploy:RootFolder}
   encoding: json

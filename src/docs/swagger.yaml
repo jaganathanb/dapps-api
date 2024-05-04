@@ -166,6 +166,21 @@ definitions:
     - password
     - username
     type: object
+  github_com_jaganathanb_dapps-api_api_dto.NotificationsPayload:
+    properties:
+      deleted_at:
+        type: string
+      id:
+        type: integer
+      isRead:
+        type: boolean
+      message:
+        type: string
+      title:
+        type: string
+      type:
+        type: string
+    type: object
   github_com_jaganathanb_dapps-api_api_dto.PagedList-github_com_jaganathanb_dapps-api_api_dto_GetGstResponse:
     properties:
       hasNextPage:
@@ -253,6 +268,19 @@ definitions:
     - lastName
     - password
     - username
+    type: object
+  github_com_jaganathanb_dapps-api_api_dto.SettingsPayload:
+    properties:
+      crontab:
+        type: string
+      gstBaseUrl:
+        type: string
+      gstPassword:
+        type: string
+      gstUsername:
+        type: string
+      id:
+        type: integer
     type: object
   github_com_jaganathanb_dapps-api_api_dto.Sort:
     properties:
@@ -864,6 +892,140 @@ paths:
       summary: Mock data
       tags:
       - Mock
+  /v{version}/notifications:
+    get:
+      consumes:
+      - application/json
+      description: Notifications for GST Web
+      parameters:
+      - default: 1
+        description: Version
+        enum:
+        - 1
+        - 2
+        in: path
+        name: version
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "400":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+      security:
+      - AuthBearer: []
+      summary: Get notifications
+      tags:
+      - Notification
+    put:
+      consumes:
+      - application/json
+      description: Update notifications for GST Web
+      parameters:
+      - default: 1
+        description: Version
+        enum:
+        - 1
+        - 2
+        in: path
+        name: version
+        required: true
+        type: integer
+      - description: NotificationsPayload
+        in: body
+        name: Request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.NotificationsPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "400":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+      security:
+      - AuthBearer: []
+      summary: Update notifications
+      tags:
+      - Notifications
+  /v{version}/settings:
+    get:
+      consumes:
+      - application/json
+      description: Settings for GST Web
+      parameters:
+      - default: 1
+        description: Version
+        enum:
+        - 1
+        - 2
+        in: path
+        name: version
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "400":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+      security:
+      - AuthBearer: []
+      summary: Get settings
+      tags:
+      - Settings
+    put:
+      consumes:
+      - application/json
+      description: Update settings for GST Web
+      parameters:
+      - default: 1
+        description: Version
+        enum:
+        - 1
+        - 2
+        in: path
+        name: version
+        required: true
+        type: integer
+      - description: SettingsPayload
+        in: body
+        name: Request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.SettingsPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "400":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+      security:
+      - AuthBearer: []
+      summary: Update settings
+      tags:
+      - Settings
   /v{version}/stream:
     get:
       consumes:

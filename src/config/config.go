@@ -38,6 +38,7 @@ type GstServer struct {
 	BaseUrl  string
 	Username string
 	Password string
+	Crontab  string
 }
 
 type LoggerConfig struct {
