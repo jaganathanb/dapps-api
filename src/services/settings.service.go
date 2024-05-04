@@ -71,8 +71,7 @@ func (s *SettingsService) UpdateSettings(req *dto.SettingsPayload) (*dto.Setting
 	settings.GstPassword = req.GstPassword
 	settings.GstBaseUrl = req.GstBaseUrl
 
-	err := tx.
-		Model(&models.Settings{}).Where("id = ?", settings.Id).Assign(&settings).FirstOrCreate(&settings).Error
+	err := tx.Model(&models.Settings{}).Where("id = ?", settings.Id).Save(&settings).Error
 
 	if err != nil {
 		tx.Rollback()

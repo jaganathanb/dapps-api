@@ -922,7 +922,7 @@ paths:
       - AuthBearer: []
       summary: Get notifications
       tags:
-      - Notification
+      - Notifications
     put:
       consumes:
       - application/json
