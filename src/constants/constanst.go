@@ -30,7 +30,16 @@ const (
 	Version uint = 1
 )
 
+type NotificationMessageType string
+
 type GstReturnType string
+
+const (
+	INFO    NotificationMessageType = "info"
+	WARN    NotificationMessageType = "warn"
+	ERROR   NotificationMessageType = "error"
+	SUCCESS NotificationMessageType = "success"
+)
 
 const (
 	GSTR1  GstReturnType = "GSTR1"

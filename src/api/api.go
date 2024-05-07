@@ -113,6 +113,11 @@ func RegisterValidators() {
 		if err != nil {
 			logger.Error(logging.Validation, logging.Startup, err.Error(), nil)
 		}
+
+		err = val.RegisterValidation("type", validation.NotificationMessageTypeValidator, true)
+		if err != nil {
+			logger.Error(logging.Validation, logging.Startup, err.Error(), nil)
+		}
 	}
 }
 

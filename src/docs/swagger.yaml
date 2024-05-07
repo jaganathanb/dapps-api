@@ -30,6 +30,18 @@ definitions:
     - GSTR2
     - GSTR3B
     - GSTR9
+  constants.NotificationMessageType:
+    enum:
+    - info
+    - warn
+    - error
+    - success
+    type: string
+    x-enum-varnames:
+    - INFO
+    - WARN
+    - ERROR
+    - SUCCESS
   github_com_jaganathanb_dapps-api_api_dto.CreateGstsRequest:
     properties:
       gsts:
@@ -176,9 +188,9 @@ definitions:
         type: boolean
       message:
         type: string
+      messageType:
+        $ref: '#/definitions/constants.NotificationMessageType'
       title:
-        type: string
-      type:
         type: string
     type: object
   github_com_jaganathanb_dapps-api_api_dto.PagedList-github_com_jaganathanb_dapps-api_api_dto_GetGstResponse:
@@ -921,6 +933,42 @@ paths:
       security:
       - AuthBearer: []
       summary: Get notifications
+      tags:
+      - Notifications
+    post:
+      consumes:
+      - application/json
+      description: Add notifications for GST Web
+      parameters:
+      - default: 1
+        description: Version
+        enum:
+        - 1
+        - 2
+        in: path
+        name: version
+        required: true
+        type: integer
+      - description: NotificationsPayload
+        in: body
+        name: Request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.NotificationsPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Success
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "400":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+      security:
+      - AuthBearer: []
+      summary: Add notifications
       tags:
       - Notifications
     put:

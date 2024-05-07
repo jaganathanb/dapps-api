@@ -37,16 +37,17 @@ func NewNotificationsService(cfg *config.Config) *NotificationsService {
 	return notificationsService
 }
 
-func (s *NotificationsService) AddNotifications(req *dto.NotificationsPayload) (bool, error) {
+// Add notifications
+func (s *NotificationsService) AddNotification(req *dto.NotificationsPayload) (bool, error) {
 	notifications := models.Notifications{}
 
 	tx := s.database.Begin()
 
 	notifications.Message = req.Message
 	notifications.Title = req.Title
-	notifications.Type = req.Type
+	notifications.MessageType = string(req.MessageType)
 
-	err := tx.Model(&models.Notifications{}).Save(notifications).Error
+	err := tx.Model(&models.Notifications{}).Save(&notifications).Error
 
 	if err != nil {
 		tx.Rollback()
@@ -55,7 +56,7 @@ func (s *NotificationsService) AddNotifications(req *dto.NotificationsPayload) (
 
 	tx.Commit()
 
-	s.streamerService.StreamData("REFRESH_NOTIFICATION")
+	s.streamerService.StreamData(StreamMessage{Code: "NOTIFICATION", Message: req.Message, MessageType: req.MessageType, Title: req.Title})
 
 	return true, nil
 }

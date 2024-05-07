@@ -122,7 +122,7 @@ func (s *GstService) UpdateGstStatus(req *dto.UpdateGstReturnStatusRequest) (boo
 	if (req.Status == constants.InvoiceEntry && req.ReturnType == constants.GSTR1) || (req.Status == constants.TaxAmountReceived && req.ReturnType == constants.GSTR3B) {
 		go s.scrapGstPortal()
 	} else {
-		s.scrapperService.streamer.StreamData("Either all GSTs are up-to-date or none of the GSTs are ready to be filed")
+		s.scrapperService.streamer.StreamData(StreamMessage{Message: "Either all GSTs are up-to-date or none of the GSTs are ready to be filed"})
 	}
 
 	return true, nil
@@ -270,7 +270,7 @@ func (s *GstService) scrapGstPortal() {
 	s.scrapperRunning = gstins
 
 	if len(gstins) > 0 {
-		s.streamerService.StreamData(fmt.Sprintf("GSTs %s scheduled for return status update", gstins))
+		s.streamerService.StreamData(StreamMessage{Message: fmt.Sprintf("GSTs %s scheduled for return status update", gstins)})
 
 		quit := s.scrapperService.ScrapSite(gstins)
 
@@ -296,7 +296,7 @@ func (s *GstService) scrapGstPortal() {
 
 		s.base.Logger.Infof("Job scheduled to update %d GSTs", len(gsts))
 	} else {
-		s.streamerService.StreamData("Either all GSTs are up-to-date or none of the GSTs are ready to be filed")
+		s.streamerService.StreamData(StreamMessage{Message: "Either all GSTs are up-to-date or none of the GSTs are ready to be filed"})
 	}
 }
 
@@ -324,7 +324,7 @@ func (s *GstService) updateGstAndReturns(gsts []models.Gst, gstDetail gst_scrapp
 			} else {
 				tx.Commit()
 
-				s.streamerService.StreamData(fmt.Sprintf("REFRESH_GSTS_TABLE|Gst and its return filing status got update into the system."))
+				s.streamerService.StreamData(StreamMessage{Message: fmt.Sprintf("Gst and its return filing status got update into the system @ %s", time.UTC.String()), Code: "REFRESH_GSTS_TABLE"})
 			}
 		}
 	}

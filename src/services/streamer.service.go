@@ -1,12 +1,12 @@
 package services
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
 	"sync"
-	"time"
 
 	"github.com/jaganathanb/dapps-api/config"
+	"github.com/jaganathanb/dapps-api/constants"
 	"github.com/jaganathanb/dapps-api/pkg/logging"
 )
 
@@ -15,6 +15,13 @@ type StreamerService struct {
 	cfg        *config.Config
 	httpClient http.Client
 	streamer   *Streamer
+}
+
+type StreamMessage struct {
+	Message     string                            `json:"message"`
+	MessageType constants.NotificationMessageType `json:"messageType"`
+	Title       string                            `json:"title"`
+	Code        string                            `json:"code"`
 }
 
 type Streamer struct {
@@ -48,8 +55,15 @@ func NewStreamerService(cfg *config.Config) *StreamerService {
 	return streamerService
 }
 
-func (s *StreamerService) StreamData(message string) {
-	s.streamer.Message <- fmt.Sprintf("%s|%s", message, time.Now())
+func (s *StreamerService) StreamData(message StreamMessage) {
+	msg, err := json.Marshal(message)
+
+	if err != nil {
+		s.logger.Error(logging.IO, logging.Api, err.Error(), nil)
+		return
+	}
+
+	s.streamer.Message <- string(msg)
 }
 
 func (s *StreamerService) AddClient(client chan string) {

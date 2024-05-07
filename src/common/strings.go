@@ -4,6 +4,7 @@ import (
 	"math"
 	"math/rand"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -24,6 +25,7 @@ var (
 var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
 var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
 var matchGstIn = regexp.MustCompile(`(?m)\d{2}[A-Z]{5}\d{4}[A-Z][\dA-Z]Z[\dA-Z]$`)
+var notificationTypes = []string{"info", "warn", "error", "success"}
 
 func CheckPassword(password string) bool {
 	cfg := config.GetConfig()
@@ -180,4 +182,8 @@ func CheckGstin(gstin string) bool {
 	}
 
 	return len(ids) > 0
+}
+
+func CheckNotificationType(notfType string) bool {
+	return slices.Contains(notificationTypes, notfType)
 }

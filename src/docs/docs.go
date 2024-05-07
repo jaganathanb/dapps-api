@@ -1128,6 +1128,61 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "post": {
+                "security": [
+                    {
+                        "AuthBearer": []
+                    }
+                ],
+                "description": "Add notifications for GST Web",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Add notifications",
+                "parameters": [
+                    {
+                        "enum": [
+                            1,
+                            2
+                        ],
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Version",
+                        "name": "version",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "NotificationsPayload",
+                        "name": "Request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.NotificationsPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Failed",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
+                        }
+                    }
+                }
             }
         },
         "/v{version}/settings": {
@@ -1303,6 +1358,21 @@ const docTemplate = `{
                 "GSTR2",
                 "GSTR3B",
                 "GSTR9"
+            ]
+        },
+        "constants.NotificationMessageType": {
+            "type": "string",
+            "enum": [
+                "info",
+                "warn",
+                "error",
+                "success"
+            ],
+            "x-enum-varnames": [
+                "INFO",
+                "WARN",
+                "ERROR",
+                "SUCCESS"
             ]
         },
         "github_com_jaganathanb_dapps-api_api_dto.CreateGstsRequest": {
@@ -1523,10 +1593,10 @@ const docTemplate = `{
                 "message": {
                     "type": "string"
                 },
-                "title": {
-                    "type": "string"
+                "messageType": {
+                    "$ref": "#/definitions/constants.NotificationMessageType"
                 },
-                "type": {
+                "title": {
                     "type": "string"
                 }
             }

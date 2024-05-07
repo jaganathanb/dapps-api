@@ -43,6 +43,38 @@ func (h *NotificationsHandler) GetNotifications(c *gin.Context) {
 	c.JSON(http.StatusOK, helper.GenerateBaseResponse(notifications, true, 0))
 }
 
+// AddNotifications godoc
+// @Summary Add notifications
+// @Description Add notifications for GST Web
+// @Tags Notifications
+// @Accept  json
+// @Produce  json
+// @Security AuthBearer
+// @Param version path int true "Version" Enums(1, 2) default(1)
+// @Param Request body dto.NotificationsPayload true "NotificationsPayload"
+// @Success 201 {object} helper.BaseHttpResponse "Success"
+// @Failure 400 {object} helper.BaseHttpResponse "Failed"
+// @Router /v{version}/notifications [post]
+func (h *NotificationsHandler) AddNotifications(c *gin.Context) {
+	req := new(dto.NotificationsPayload)
+	err := c.ShouldBindJSON(&req)
+
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest,
+			helper.GenerateBaseResponseWithValidationError(nil, false, helper.ValidationError, err))
+		return
+	}
+	notifications, err := h.service.AddNotification(req)
+
+	if err != nil {
+		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(err),
+			helper.GenerateBaseResponseWithError(nil, false, helper.InternalError, err))
+		return
+	}
+
+	c.JSON(http.StatusOK, helper.GenerateBaseResponse(notifications, true, 0))
+}
+
 // UpdateNotifications godoc
 // @Summary Update notifications
 // @Description Update notifications for GST Web
