@@ -27,12 +27,18 @@ func NewNotificationsHandler(cfg *config.Config) *NotificationsHandler {
 // @Accept  json
 // @Produce  json
 // @Security AuthBearer
+// @Param dapps-user-id header int true "UserId"
 // @Param version path int true "Version" Enums(1, 2) default(1)
 // @Success 200 {object} helper.BaseHttpResponse "Success"
 // @Failure 400 {object} helper.BaseHttpResponse "Failed"
 // @Router /v{version}/notifications [get]
 func (h *NotificationsHandler) GetNotifications(c *gin.Context) {
-	notifications, err := h.service.GetNotifications()
+	header, ok := GetHeaderValues(c)
+	if !ok {
+		return
+	}
+
+	notifications, err := h.service.GetNotifications(header.DappsUserId)
 
 	if err != nil {
 		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(err),
@@ -50,6 +56,7 @@ func (h *NotificationsHandler) GetNotifications(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Security AuthBearer
+// @Param dapps-user-id header int true "UserId"
 // @Param version path int true "Version" Enums(1, 2) default(1)
 // @Param Request body dto.NotificationsPayload true "NotificationsPayload"
 // @Success 201 {object} helper.BaseHttpResponse "Success"
@@ -64,6 +71,15 @@ func (h *NotificationsHandler) AddNotifications(c *gin.Context) {
 			helper.GenerateBaseResponseWithValidationError(nil, false, helper.ValidationError, err))
 		return
 	}
+
+	header, ok := GetHeaderValues(c)
+	if !ok {
+		return
+	}
+
+	req.BaseDto.CreatedBy = header.DappsUserId
+	req.UserId = header.DappsUserId
+
 	notifications, err := h.service.AddNotification(req)
 
 	if err != nil {
@@ -82,6 +98,7 @@ func (h *NotificationsHandler) AddNotifications(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Security AuthBearer
+// @Param dapps-user-id header int true "UserId"
 // @Param version path int true "Version" Enums(1, 2) default(1)
 // @Param Request body dto.NotificationsPayload true "NotificationsPayload"
 // @Success 200 {object} helper.BaseHttpResponse "Success"
@@ -96,7 +113,56 @@ func (h *NotificationsHandler) UpdateNotifications(c *gin.Context) {
 			helper.GenerateBaseResponseWithValidationError(nil, false, helper.ValidationError, err))
 		return
 	}
+
+	header, ok := GetHeaderValues(c)
+	if !ok {
+		return
+	}
+
+	req.BaseDto.ModifiedBy = header.DappsUserId
+	req.ModifiedBy = header.DappsUserId
 	notifications, err := h.service.UpdateNotifications(req)
+
+	if err != nil {
+		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(err),
+			helper.GenerateBaseResponseWithError(nil, false, helper.InternalError, err))
+		return
+	}
+
+	c.JSON(http.StatusOK, helper.GenerateBaseResponse(notifications, true, 0))
+}
+
+// DeleteNotifications godoc
+// @Summary Delete notifications
+// @Description Delete notifications from GST Web
+// @Tags Notifications
+// @Accept  json
+// @Produce  json
+// @Security AuthBearer
+// @Param dapps-user-id header int true "UserId"
+// @Param version path int true "Version" Enums(1, 2) default(1)
+// @Param Request body dto.NotificationsPayload true "NotificationsPayload"
+// @Success 200 {object} helper.BaseHttpResponse "Success"
+// @Failure 400 {object} helper.BaseHttpResponse "Failed"
+// @Router /v{version}/notifications [delete]
+func (h *NotificationsHandler) DeleteNotifications(c *gin.Context) {
+	req := new(dto.NotificationsPayload)
+	err := c.ShouldBindJSON(&req)
+
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest,
+			helper.GenerateBaseResponseWithValidationError(nil, false, helper.ValidationError, err))
+		return
+	}
+
+	header, ok := GetHeaderValues(c)
+	if !ok {
+		return
+	}
+
+	req.BaseDto.ModifiedBy = header.DappsUserId
+	req.ModifiedBy = header.DappsUserId
+	notifications, err := h.service.DeleteNotifications(req)
 
 	if err != nil {
 		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(err),

@@ -32,3 +32,23 @@ type LoginByUsernameRequest struct {
 type LogoutByUsernameRequest struct {
 	Username string `json:"username" binding:"required,min=5"`
 }
+
+type User struct {
+	BaseDto
+	Username     string      `json:"userName"`
+	FirstName    string      `json:"firstName"`
+	LastName     string      `json:"lastName"`
+	MobileNumber string      `json:"mobileNumber"`
+	Email        string      `json:"email"`
+	Enabled      bool        `json:"enabled"`
+	UserRoles    *[]UserRole `json:"userRoles"`
+}
+
+type Role struct {
+	Id   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+type UserRole struct {
+	Role Role `json:"role"`
+}

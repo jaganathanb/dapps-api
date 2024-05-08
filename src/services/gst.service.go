@@ -324,7 +324,7 @@ func (s *GstService) updateGstAndReturns(gsts []models.Gst, gstDetail gst_scrapp
 			} else {
 				tx.Commit()
 
-				s.streamerService.StreamData(StreamMessage{Message: fmt.Sprintf("Gst and its return filing status got update into the system @ %s", time.UTC.String()), Code: "REFRESH_GSTS_TABLE"})
+				s.streamerService.StreamData(StreamMessage{Message: fmt.Sprintf("Gst Return status got updated into the system @ %s", time.UTC.String()), Code: "REFRESH_GSTS_TABLE"})
 			}
 		}
 	}

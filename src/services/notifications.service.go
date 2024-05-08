@@ -39,15 +39,20 @@ func NewNotificationsService(cfg *config.Config) *NotificationsService {
 
 // Add notifications
 func (s *NotificationsService) AddNotification(req *dto.NotificationsPayload) (bool, error) {
-	notifications := models.Notifications{}
-
 	tx := s.database.Begin()
 
-	notifications.Message = req.Message
-	notifications.Title = req.Title
-	notifications.MessageType = string(req.MessageType)
+	notifications := models.Notifications{
+		Message:     req.Message,
+		MessageType: string(req.MessageType),
+		Title:       req.Title,
+		UserId:      req.UserId,
+		IsRead:      req.IsRead,
+		BaseModel: models.BaseModel{
+			CreatedBy: req.BaseDto.CreatedBy,
+		},
+	}
 
-	err := tx.Model(&models.Notifications{}).Save(&notifications).Error
+	err := tx.Model(&models.Notifications{}).Where("id = ?", req.Id).Save(&notifications).Error
 
 	if err != nil {
 		tx.Rollback()
@@ -62,10 +67,10 @@ func (s *NotificationsService) AddNotification(req *dto.NotificationsPayload) (b
 }
 
 // Get notifications
-func (s *NotificationsService) GetNotifications() ([]dto.NotificationsPayload, error) {
+func (s *NotificationsService) GetNotifications(userId int) ([]dto.NotificationsPayload, error) {
 	notifications := []models.Notifications{}
 
-	err := s.database.Model(&models.Notifications{}).Where("deleted_at is null").Find(&notifications).Error
+	err := s.database.Model(&models.Notifications{}).Where("deleted_at is null AND user_id = ?", userId).Find(&notifications).Error
 
 	if err != nil {
 		return []dto.NotificationsPayload{}, nil
@@ -93,9 +98,32 @@ func (s *NotificationsService) UpdateNotifications(req *dto.NotificationsPayload
 	tx := s.database.Begin()
 
 	notifications.IsRead = req.IsRead
-	notifications.DeletedAt = *req.DeletedAt
+	notifications.DeletedAt = req.DeletedAt
 
 	err = tx.Model(&models.Notifications{}).Where("id = ?", req.Id).Updates(notifications).Error
+
+	if err != nil {
+		tx.Rollback()
+		return false, nil
+	}
+
+	tx.Commit()
+
+	return true, nil
+}
+
+// Delete notifications
+func (s *NotificationsService) DeleteNotifications(req *dto.NotificationsPayload) (bool, error) {
+	var notifications models.Notifications
+	err := s.database.Model(&models.Notifications{}).Where("id = ?", req.Id).First(&notifications).Error
+
+	if err != nil {
+		return false, err
+	}
+
+	tx := s.database.Begin()
+
+	err = tx.Model(&models.Notifications{}).Where("id = ?", req.Id).Delete(&notifications).Error
 
 	if err != nil {
 		tx.Rollback()

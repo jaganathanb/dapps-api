@@ -12,4 +12,5 @@ func Notifications(r *gin.RouterGroup, cfg *config.Config) {
 	r.PUT("", handler.UpdateNotifications)
 	r.POST("", handler.AddNotifications)
 	r.GET("", handler.GetNotifications)
+	r.DELETE("", handler.DeleteNotifications)
 }

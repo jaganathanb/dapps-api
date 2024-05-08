@@ -2,7 +2,24 @@ package dto
 
 import (
 	"mime/multipart"
+	"time"
 )
+
+type BaseDto struct {
+	Id int `json:"id"`
+
+	CreatedAt  time.Time `json:"createdAt"`
+	ModifiedAt time.Time `json:"modifiedAt"`
+	DeletedAt  time.Time `json:"deletedAt"`
+
+	CreatedBy  int `json:"createdBy"`
+	ModifiedBy int `json:"modifiedBy"`
+	DeletedBy  int `json:"deletedBy"`
+}
+
+type DAppsHeader struct {
+	DappsUserId int `header:"dapps-user-id"`
+}
 
 // File
 type FileFormRequest struct {

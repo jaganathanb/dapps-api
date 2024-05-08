@@ -77,6 +77,29 @@ func (s *AuthService) LoginByUsername(req *dto.LoginByUsernameRequest) (*dto.Tok
 	return token, nil
 }
 
+// Get user by username
+func (s *AuthService) GetLoggedInUserDetail(req *dto.LoginByUsernameRequest) (*dto.User, error) {
+	var user models.User
+	result := s.database.
+		Model(&models.User{}).
+		Preload("UserRoles", func(tx *gorm.DB) *gorm.DB {
+			return tx.Preload("Role")
+		}).
+		First(&user, "username = ?", req.Username)
+
+	if result.Error != nil || result.RowsAffected == 0 {
+		return nil, result.Error
+	}
+
+	u, err := common.TypeConverter[dto.User](user)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return u, nil
+}
+
 // Login by username
 func (s *AuthService) LogoutByUsername(req *dto.LogoutByUsernameRequest) (bool, error) {
 	ok, err := s.tokenService.InvalidaateToken(req.Username)

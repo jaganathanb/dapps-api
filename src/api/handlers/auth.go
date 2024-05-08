@@ -108,6 +108,37 @@ func (h *AuthHandler) RegisterByUsername(c *gin.Context) {
 	c.JSON(http.StatusCreated, helper.GenerateBaseResponse(nil, true, helper.Success))
 }
 
+// GetLoggedInUserDetail godoc
+// @Summary GetLoggedInUserDetail
+// @Description Gets details about the logged in user
+// @Tags Auth
+// @Accept  json
+// @Produce  json
+// @Param version path int true "Version" Enums(1, 2) default(1)
+// @Param username path string true "Username" default(admin@dapps.com)
+// @Success 200 {object} helper.BaseHttpResponse{result=dto.User} "Success"
+// @Failure 400 {object} helper.BaseHttpResponse "Failed"
+// @Failure 409 {object} helper.BaseHttpResponse "Failed"
+// @Router /v{version}/auth/{username}/profile [get]
+func (h *AuthHandler) GetLoggedInUserDetail(c *gin.Context) {
+	userName := c.Params.ByName("username")
+	if userName == "" {
+		c.AbortWithStatusJSON(http.StatusNotFound,
+			helper.GenerateBaseResponse(nil, false, helper.ValidationError))
+		return
+	}
+
+	user, err := h.service.GetLoggedInUserDetail(&dto.LoginByUsernameRequest{Username: userName})
+
+	if err != nil {
+		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(err),
+			helper.GenerateBaseResponseWithError(nil, false, helper.InternalError, err))
+		return
+	}
+
+	c.JSON(http.StatusOK, helper.GenerateBaseResponse(user, true, helper.Success))
+}
+
 // RegisterLoginByMobileNumber godoc
 // @Summary RegisterLoginByMobileNumber
 // @Description RegisterLoginByMobileNumber

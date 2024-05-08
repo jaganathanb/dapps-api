@@ -11,6 +11,7 @@ type CreateGstRequest struct {
 }
 
 type CreateGstsRequest struct {
+	BaseDto
 	Gsts []Gst `json:"gsts" binding:"required"`
 }
 
@@ -27,17 +28,20 @@ type GstFiledCount struct {
 }
 
 type UpdateGstReturnStatusRequest struct {
+	BaseDto
 	Gstin      string                    `json:"gstin" binding:"required,gstin"`
 	ReturnType constants.GstReturnType   `json:"returnType"`
 	Status     constants.GstReturnStatus `json:"status"`
 }
 
 type UpdateGstLockStatusRequest struct {
+	BaseDto
 	Gstin  string `json:"gstin"`
 	Locked bool   `json:"locked"`
 }
 
 type RemoveGstRequest struct {
+	BaseDto
 	Gstin string `json:"gstin" binding:"required,gstin"`
 }
 

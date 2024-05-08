@@ -58,6 +58,8 @@ func RegisterRoutes(r *gin.Engine, cfg *config.Config) {
 
 		// User, GSTs
 		auth := v1.Group("/auth")
+		user := auth.Group("/:username")
+
 		gsts := v1.Group("/gsts")
 		gst := gsts.Group("/:gstin")
 
@@ -75,6 +77,7 @@ func RegisterRoutes(r *gin.Engine, cfg *config.Config) {
 
 		// User, GST, Mock & Streamer
 		routers.Auth(auth, cfg)
+		routers.User(user, cfg)
 		routers.Gsts(gsts, cfg)
 		routers.Gst(gst, cfg)
 		routers.Mock(mocks, cfg)

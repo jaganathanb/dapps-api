@@ -6,4 +6,5 @@ type Notifications struct {
 	MessageType string `json:"messageType"`
 	Title       string `json:"title"`
 	IsRead      bool   `json:"isRead"`
+	UserId      int    `json:"userId"`
 }

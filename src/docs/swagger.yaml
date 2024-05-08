@@ -44,10 +44,24 @@ definitions:
     - SUCCESS
   github_com_jaganathanb_dapps-api_api_dto.CreateGstsRequest:
     properties:
+      createdAt:
+        type: string
+      createdBy:
+        type: integer
+      deletedAt:
+        type: string
+      deletedBy:
+        type: integer
       gsts:
         items:
           $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.Gst'
         type: array
+      id:
+        type: integer
+      modifiedAt:
+        type: string
+      modifiedBy:
+        type: integer
     required:
     - gsts
     type: object
@@ -180,8 +194,14 @@ definitions:
     type: object
   github_com_jaganathanb_dapps-api_api_dto.NotificationsPayload:
     properties:
-      deleted_at:
+      createdAt:
         type: string
+      createdBy:
+        type: integer
+      deletedAt:
+        type: string
+      deletedBy:
+        type: integer
       id:
         type: integer
       isRead:
@@ -190,8 +210,14 @@ definitions:
         type: string
       messageType:
         $ref: '#/definitions/constants.NotificationMessageType'
+      modifiedAt:
+        type: string
+      modifiedBy:
+        type: integer
       title:
         type: string
+      userId:
+        type: integer
     type: object
   github_com_jaganathanb_dapps-api_api_dto.PagedList-github_com_jaganathanb_dapps-api_api_dto_GetGstResponse:
     properties:
@@ -281,6 +307,13 @@ definitions:
     - password
     - username
     type: object
+  github_com_jaganathanb_dapps-api_api_dto.Role:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
   github_com_jaganathanb_dapps-api_api_dto.SettingsPayload:
     properties:
       crontab:
@@ -303,14 +336,66 @@ definitions:
     type: object
   github_com_jaganathanb_dapps-api_api_dto.UpdateGstReturnStatusRequest:
     properties:
+      createdAt:
+        type: string
+      createdBy:
+        type: integer
+      deletedAt:
+        type: string
+      deletedBy:
+        type: integer
       gstin:
         type: string
+      id:
+        type: integer
+      modifiedAt:
+        type: string
+      modifiedBy:
+        type: integer
       returnType:
         $ref: '#/definitions/constants.GstReturnType'
       status:
         type: string
     required:
     - gstin
+    type: object
+  github_com_jaganathanb_dapps-api_api_dto.User:
+    properties:
+      createdAt:
+        type: string
+      createdBy:
+        type: integer
+      deletedAt:
+        type: string
+      deletedBy:
+        type: integer
+      email:
+        type: string
+      enabled:
+        type: boolean
+      firstName:
+        type: string
+      id:
+        type: integer
+      lastName:
+        type: string
+      mobileNumber:
+        type: string
+      modifiedAt:
+        type: string
+      modifiedBy:
+        type: integer
+      userName:
+        type: string
+      userRoles:
+        items:
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.UserRole'
+        type: array
+    type: object
+  github_com_jaganathanb_dapps-api_api_dto.UserRole:
+    properties:
+      role:
+        $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.Role'
     type: object
   github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse:
     properties:
@@ -361,6 +446,50 @@ definitions:
 info:
   contact: {}
 paths:
+  /v{version}/auth/{username}/profile:
+    get:
+      consumes:
+      - application/json
+      description: Gets details about the logged in user
+      parameters:
+      - default: 1
+        description: Version
+        enum:
+        - 1
+        - 2
+        in: path
+        name: version
+        required: true
+        type: integer
+      - default: admin@dapps.com
+        description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+            - properties:
+                result:
+                  $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.User'
+              type: object
+        "400":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "409":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+      summary: GetLoggedInUserDetail
+      tags:
+      - Auth
   /v{version}/auth/login:
     post:
       consumes:
@@ -905,11 +1034,57 @@ paths:
       tags:
       - Mock
   /v{version}/notifications:
+    delete:
+      consumes:
+      - application/json
+      description: Delete notifications from GST Web
+      parameters:
+      - description: UserId
+        in: header
+        name: dapps-user-id
+        required: true
+        type: integer
+      - default: 1
+        description: Version
+        enum:
+        - 1
+        - 2
+        in: path
+        name: version
+        required: true
+        type: integer
+      - description: NotificationsPayload
+        in: body
+        name: Request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.NotificationsPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+        "400":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse'
+      security:
+      - AuthBearer: []
+      summary: Delete notifications
+      tags:
+      - Notifications
     get:
       consumes:
       - application/json
       description: Notifications for GST Web
       parameters:
+      - description: UserId
+        in: header
+        name: dapps-user-id
+        required: true
+        type: integer
       - default: 1
         description: Version
         enum:
@@ -940,6 +1115,11 @@ paths:
       - application/json
       description: Add notifications for GST Web
       parameters:
+      - description: UserId
+        in: header
+        name: dapps-user-id
+        required: true
+        type: integer
       - default: 1
         description: Version
         enum:
@@ -976,6 +1156,11 @@ paths:
       - application/json
       description: Update notifications for GST Web
       parameters:
+      - description: UserId
+        in: header
+        name: dapps-user-id
+        required: true
+        type: integer
       - default: 1
         description: Version
         enum:

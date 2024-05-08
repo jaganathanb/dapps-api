@@ -482,6 +482,75 @@ const docTemplate = `{
                 }
             }
         },
+        "/v{version}/auth/{username}/profile": {
+            "get": {
+                "description": "Gets details about the logged in user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "GetLoggedInUserDetail",
+                "parameters": [
+                    {
+                        "enum": [
+                            1,
+                            2
+                        ],
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Version",
+                        "name": "version",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "admin@dapps.com",
+                        "description": "Username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "result": {
+                                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.User"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Failed",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Failed",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/v{version}/gsts": {
             "post": {
                 "security": [
@@ -1047,6 +1116,13 @@ const docTemplate = `{
                 "summary": "Get notifications",
                 "parameters": [
                     {
+                        "type": "integer",
+                        "description": "UserId",
+                        "name": "dapps-user-id",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
                         "enum": [
                             1,
                             2
@@ -1092,6 +1168,13 @@ const docTemplate = `{
                 ],
                 "summary": "Update notifications",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UserId",
+                        "name": "dapps-user-id",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "enum": [
                             1,
@@ -1148,6 +1231,13 @@ const docTemplate = `{
                 "summary": "Add notifications",
                 "parameters": [
                     {
+                        "type": "integer",
+                        "description": "UserId",
+                        "name": "dapps-user-id",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
                         "enum": [
                             1,
                             2
@@ -1171,6 +1261,68 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Failed",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "AuthBearer": []
+                    }
+                ],
+                "description": "Delete notifications from GST Web",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Delete notifications",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UserId",
+                        "name": "dapps-user-id",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            1,
+                            2
+                        ],
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Version",
+                        "name": "version",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "NotificationsPayload",
+                        "name": "Request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.NotificationsPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
                         "description": "Success",
                         "schema": {
                             "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
@@ -1381,11 +1533,32 @@ const docTemplate = `{
                 "gsts"
             ],
             "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "createdBy": {
+                    "type": "integer"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "deletedBy": {
+                    "type": "integer"
+                },
                 "gsts": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.Gst"
                     }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "modifiedAt": {
+                    "type": "string"
+                },
+                "modifiedBy": {
+                    "type": "integer"
                 }
             }
         },
@@ -1581,8 +1754,17 @@ const docTemplate = `{
         "github_com_jaganathanb_dapps-api_api_dto.NotificationsPayload": {
             "type": "object",
             "properties": {
-                "deleted_at": {
+                "createdAt": {
                     "type": "string"
+                },
+                "createdBy": {
+                    "type": "integer"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "deletedBy": {
+                    "type": "integer"
                 },
                 "id": {
                     "type": "integer"
@@ -1596,8 +1778,17 @@ const docTemplate = `{
                 "messageType": {
                     "$ref": "#/definitions/constants.NotificationMessageType"
                 },
+                "modifiedAt": {
+                    "type": "string"
+                },
+                "modifiedBy": {
+                    "type": "integer"
+                },
                 "title": {
                     "type": "string"
+                },
+                "userId": {
+                    "type": "integer"
                 }
             }
         },
@@ -1729,6 +1920,17 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_jaganathanb_dapps-api_api_dto.Role": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_jaganathanb_dapps-api_api_dto.SettingsPayload": {
             "type": "object",
             "properties": {
@@ -1766,14 +1968,93 @@ const docTemplate = `{
                 "gstin"
             ],
             "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "createdBy": {
+                    "type": "integer"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "deletedBy": {
+                    "type": "integer"
+                },
                 "gstin": {
                     "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "modifiedAt": {
+                    "type": "string"
+                },
+                "modifiedBy": {
+                    "type": "integer"
                 },
                 "returnType": {
                     "$ref": "#/definitions/constants.GstReturnType"
                 },
                 "status": {
                     "type": "string"
+                }
+            }
+        },
+        "github_com_jaganathanb_dapps-api_api_dto.User": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "createdBy": {
+                    "type": "integer"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "deletedBy": {
+                    "type": "integer"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "mobileNumber": {
+                    "type": "string"
+                },
+                "modifiedAt": {
+                    "type": "string"
+                },
+                "modifiedBy": {
+                    "type": "integer"
+                },
+                "userName": {
+                    "type": "string"
+                },
+                "userRoles": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.UserRole"
+                    }
+                }
+            }
+        },
+        "github_com_jaganathanb_dapps-api_api_dto.UserRole": {
+            "type": "object",
+            "properties": {
+                "role": {
+                    "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.Role"
                 }
             }
         },

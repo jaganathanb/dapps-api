@@ -61,6 +61,12 @@ func (h *GstsHandler) CreateGsts(c *gin.Context) {
 		return
 	}
 
+	header, ok := GetHeaderValues(c)
+	if !ok {
+		return
+	}
+
+	req.CreatedBy = header.DappsUserId
 	msg, err := h.service.CreateGsts(req)
 	if err != nil {
 		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(err),
@@ -102,7 +108,14 @@ func (h *GstsHandler) UpdateGstStatus(c *gin.Context) {
 			helper.GenerateBaseResponseWithValidationError(nil, false, helper.ValidationError, err))
 		return
 	}
-	ok, err := h.service.UpdateGstStatus(req)
+
+	header, ok := GetHeaderValues(c)
+	if !ok {
+		return
+	}
+
+	req.ModifiedBy = header.DappsUserId
+	ok, err = h.service.UpdateGstStatus(req)
 	if err != nil {
 		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(err),
 			helper.GenerateBaseResponseWithError(nil, false, helper.InternalError, err))
@@ -144,7 +157,14 @@ func (h *GstsHandler) LockGstById(c *gin.Context) {
 			helper.GenerateBaseResponseWithValidationError(nil, false, helper.ValidationError, err))
 		return
 	}
-	ok, err := h.service.LockGstById(req)
+
+	header, ok := GetHeaderValues(c)
+	if !ok {
+		return
+	}
+	req.ModifiedBy = header.DappsUserId
+
+	ok, err = h.service.LockGstById(req)
 	if err != nil {
 		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(err),
 			helper.GenerateBaseResponseWithError(nil, false, helper.InternalError, err))
@@ -177,6 +197,13 @@ func (h *GstsHandler) DeleteGstById(c *gin.Context) {
 
 	req := new(dto.RemoveGstRequest)
 	req.Gstin = gstin
+
+	header, ok := GetHeaderValues(c)
+	if !ok {
+		return
+	}
+
+	req.DeletedBy = header.DappsUserId
 
 	ok, err := h.service.DeleteGstById(req)
 	if err != nil {
