@@ -64,6 +64,15 @@ func (h *SettingsHandler) UpdateSettings(c *gin.Context) {
 			helper.GenerateBaseResponseWithValidationError(nil, false, helper.ValidationError, err))
 		return
 	}
+
+	header, ok := GetHeaderValues(c)
+
+	if !ok {
+		return
+	}
+
+	req.ModifiedBy = header.DappsUserId
+	req.CreatedBy = header.DappsUserId
 	settings, err := h.service.UpdateSettings(req)
 
 	if err != nil {

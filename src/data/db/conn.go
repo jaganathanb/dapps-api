@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/jaganathanb/dapps-api/config"
+	"github.com/jaganathanb/dapps-api/data/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -58,6 +59,16 @@ func InitDb(cfg *config.Config) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	var settings []models.Settings
+	err = GetDb().Model(models.Settings{}).Where("deleted_at is null").Find(&settings).Error
+
+	if err == nil && len(settings) > 0 {
+		cfg.Server.Gst.Username = settings[0].GstUsername
+		cfg.Server.Gst.Password = settings[0].GstPassword
+		cfg.Server.Gst.BaseUrl = settings[0].GstBaseUrl
+		cfg.Server.Gst.Crontab = settings[0].Crontab
 	}
 
 	log.Println("Db connection established")

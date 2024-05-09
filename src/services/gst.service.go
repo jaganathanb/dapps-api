@@ -22,10 +22,11 @@ import (
 )
 
 type GstService struct {
-	base            *BaseService[models.Gst, dto.CreateGstRequest, dto.UpdateGstReturnStatusRequest, dto.GetGstResponse]
-	scrapperService *ScrapperService
-	streamerService *StreamerService
-	scrapperRunning []string
+	base                 *BaseService[models.Gst, dto.CreateGstRequest, dto.UpdateGstReturnStatusRequest, dto.GetGstResponse]
+	scrapperService      *ScrapperService
+	streamerService      *StreamerService
+	notificationsService *NotificationsService
+	scrapperRunning      []string
 }
 
 var gstService *GstService
@@ -44,8 +45,9 @@ func NewGstService(cfg *config.Config) *GstService {
 				},
 				Config: cfg,
 			},
-			scrapperService: NewScrapperService(cfg),
-			streamerService: NewStreamerService(cfg),
+			scrapperService:      NewScrapperService(cfg),
+			streamerService:      NewStreamerService(cfg),
+			notificationsService: NewNotificationsService(cfg),
 		}
 	})
 
@@ -89,7 +91,7 @@ func (s *GstService) CreateGsts(req *dto.CreateGstsRequest) (string, error) {
 
 	gstins := lo.Map(gsts, func(g dto.Gst, i int) string { return g.Gstin })
 
-	go s.scrapGstPortal()
+	go s.scrapGstPortal(req.CreatedBy)
 
 	return fmt.Sprintf("%s gst details already exists. %s gst details entered into the system.", exists, gstins), err
 }
@@ -120,9 +122,9 @@ func (s *GstService) UpdateGstStatus(req *dto.UpdateGstReturnStatusRequest) (boo
 	tx.Commit()
 
 	if (req.Status == constants.InvoiceEntry && req.ReturnType == constants.GSTR1) || (req.Status == constants.TaxAmountReceived && req.ReturnType == constants.GSTR3B) {
-		go s.scrapGstPortal()
+		go s.scrapGstPortal(req.CreatedBy)
 	} else {
-		s.scrapperService.streamer.StreamData(StreamMessage{Message: "Either all GSTs are up-to-date or none of the GSTs are ready to be filed"})
+		s.streamerService.StreamData(StreamMessage{Message: "Either all GSTs are up-to-date or none of the GSTs are ready to be filed"})
 	}
 
 	return true, nil
@@ -208,11 +210,11 @@ func (s *GstService) GetGstStatistics() (dto.GstFiledCount, error) {
 	return gstFiledCount, err
 }
 
-func (s *GstService) RefreshGstReturns() error {
+func (s *GstService) RefreshGstReturns(userId int) error {
 	if s.base.Config.Server.Gst.Username == "" || s.base.Config.Server.Gst.Password == "" {
 		return fmt.Errorf("GST Server login details are not correct!")
 	}
-	go s.scrapGstPortal()
+	go s.scrapGstPortal(userId)
 
 	return nil
 }
@@ -247,7 +249,7 @@ func (s *GstService) getExistingGstsInSystem(gsts []dto.Gst) ([]string, error) {
 	return exists, nil
 }
 
-func (s *GstService) scrapGstPortal() {
+func (s *GstService) scrapGstPortal(userId int) {
 	var gsts []models.Gst
 
 	var gstDetail = gst_scrapper.GstDetail{}
@@ -286,6 +288,9 @@ func (s *GstService) scrapGstPortal() {
 					} else {
 						s.base.Logger.Warn(logging.IO, logging.Api, "Done with scrapping!", nil)
 						s.scrapperRunning = []string{}
+
+						s.notificationsService.AddNotification(&dto.NotificationsPayload{UserId: userId, BaseDto: dto.BaseDto{CreatedBy: userId}, MessageType: constants.INFO, Message: fmt.Sprintf("GST Return status for GSTINs %s has been updated into system", strings.Join(gstins, ","))})
+						s.streamerService.StreamData(StreamMessage{Code: "REFRESH_GSTS_TABLE"})
 						return
 					}
 				}
@@ -323,8 +328,6 @@ func (s *GstService) updateGstAndReturns(gsts []models.Gst, gstDetail gst_scrapp
 				s.base.Logger.Error(logging.Sqlite3, logging.Rollback, err.Error(), nil)
 			} else {
 				tx.Commit()
-
-				s.streamerService.StreamData(StreamMessage{Message: fmt.Sprintf("Gst Return status got updated into the system @ %s", time.UTC.String()), Code: "REFRESH_GSTS_TABLE"})
 			}
 		}
 	}

@@ -75,7 +75,7 @@ func createOrUpdateSettings(database *gorm.DB, cfg *config.Config) {
 
 	err := database.
 		Model(&models.Settings{}).
-		Where("deleted_at is null").
+		Where("1 = 1").
 		FirstOrInit(&settings).Error
 
 	if err == nil {

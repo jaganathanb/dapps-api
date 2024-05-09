@@ -316,8 +316,16 @@ definitions:
     type: object
   github_com_jaganathanb_dapps-api_api_dto.SettingsPayload:
     properties:
+      createdAt:
+        type: string
+      createdBy:
+        type: integer
       crontab:
         type: string
+      deletedAt:
+        type: string
+      deletedBy:
+        type: integer
       gstBaseUrl:
         type: string
       gstPassword:
@@ -325,6 +333,10 @@ definitions:
       gstUsername:
         type: string
       id:
+        type: integer
+      modifiedAt:
+        type: string
+      modifiedBy:
         type: integer
     type: object
   github_com_jaganathanb_dapps-api_api_dto.Sort:

@@ -1934,8 +1934,20 @@ const docTemplate = `{
         "github_com_jaganathanb_dapps-api_api_dto.SettingsPayload": {
             "type": "object",
             "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "createdBy": {
+                    "type": "integer"
+                },
                 "crontab": {
                     "type": "string"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "deletedBy": {
+                    "type": "integer"
                 },
                 "gstBaseUrl": {
                     "type": "string"
@@ -1947,6 +1959,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
+                    "type": "integer"
+                },
+                "modifiedAt": {
+                    "type": "string"
+                },
+                "modifiedBy": {
                     "type": "integer"
                 }
             }

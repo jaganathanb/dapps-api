@@ -16,7 +16,7 @@ type DAppsJobScheduler struct {
 	shutdownChan <-chan string
 }
 
-type scrapper func()
+type scrapper func(userId int)
 
 var jobScheduler *DAppsJobScheduler
 var jobSchedulerOnce sync.Once
@@ -48,10 +48,10 @@ func (s *DAppsJobScheduler) RemoveJobs(tag string) {
 	s.scheduler.RemoveByTags(tag)
 }
 
-func (s *DAppsJobScheduler) AddJob(crontab string, tag string, cb scrapper) (string, error) {
+func (s *DAppsJobScheduler) AddJob(crontab string, tag string, cb scrapper, userId int) (string, error) {
 	job, err := s.scheduler.NewJob(
 		gocron.CronJob(crontab, false),
-		gocron.NewTask(cb),
+		gocron.NewTask(cb, userId),
 		gocron.WithTags(tag),
 		gocron.WithEventListeners(gocron.BeforeJobRuns(func(jobID uuid.UUID, jobName string) {
 			s.logger.Infof("Job %s started with name %s", jobID, jobName)

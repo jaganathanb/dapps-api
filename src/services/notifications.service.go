@@ -70,7 +70,7 @@ func (s *NotificationsService) AddNotification(req *dto.NotificationsPayload) (b
 func (s *NotificationsService) GetNotifications(userId int) ([]dto.NotificationsPayload, error) {
 	notifications := []models.Notifications{}
 
-	err := s.database.Model(&models.Notifications{}).Where("deleted_at is null AND user_id = ?", userId).Find(&notifications).Error
+	err := s.database.Model(&models.Notifications{}).Where("deleted_at is null").Find(&notifications).Error
 
 	if err != nil {
 		return []dto.NotificationsPayload{}, nil

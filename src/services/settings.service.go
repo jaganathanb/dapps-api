@@ -1,10 +1,10 @@
 package services
 
 import (
+	"database/sql"
 	"sync"
 
 	"github.com/jaganathanb/dapps-api/api/dto"
-	"github.com/jaganathanb/dapps-api/common"
 	"github.com/jaganathanb/dapps-api/config"
 	"github.com/jaganathanb/dapps-api/data/db"
 	"github.com/jaganathanb/dapps-api/data/models"
@@ -52,7 +52,15 @@ func (s *SettingsService) GetSettings() (*dto.SettingsPayload, error) {
 		return nil, result.Error
 	}
 
-	return common.TypeConverter[dto.SettingsPayload](settings)
+	return &dto.SettingsPayload{
+		Crontab:     settings.Crontab,
+		GstUsername: settings.GstUsername,
+		GstPassword: settings.GstPassword,
+		GstBaseUrl:  settings.GstBaseUrl,
+		BaseDto: dto.BaseDto{
+			Id: settings.BaseModel.Id,
+		},
+	}, nil
 }
 
 // Get settings
@@ -66,6 +74,11 @@ func (s *SettingsService) UpdateSettings(req *dto.SettingsPayload) (*dto.Setting
 	tx := s.database.Begin()
 
 	settings.Id = req.Id
+	settings.ModifiedBy = &sql.NullInt64{
+		Valid: true,
+		Int64: int64(req.ModifiedBy),
+	}
+	settings.CreatedBy = req.ModifiedBy
 	settings.Crontab = req.Crontab
 	settings.GstUsername = req.GstUsername
 	settings.GstPassword = req.GstPassword
@@ -80,10 +93,18 @@ func (s *SettingsService) UpdateSettings(req *dto.SettingsPayload) (*dto.Setting
 
 	if crontab != req.Crontab {
 		s.scheduler.RemoveJobs("gst")
-		s.scheduler.AddJob(settings.Crontab, "gst", s.gstService.scrapGstPortal)
+		s.scheduler.AddJob(settings.Crontab, "gst", s.gstService.scrapGstPortal, req.ModifiedBy)
 	}
 
 	tx.Commit()
 
-	return common.TypeConverter[dto.SettingsPayload](settings)
+	return &dto.SettingsPayload{
+		Crontab:     settings.Crontab,
+		GstUsername: settings.GstUsername,
+		GstPassword: settings.GstPassword,
+		GstBaseUrl:  settings.GstBaseUrl,
+		BaseDto: dto.BaseDto{
+			Id: settings.BaseModel.Id,
+		},
+	}, nil
 }

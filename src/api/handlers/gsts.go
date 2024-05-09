@@ -251,7 +251,13 @@ func (h *GstsHandler) GetGstStatistics(c *gin.Context) {
 // @Failure 409 {object} helper.BaseHttpResponse "Failed"
 // @Router /v{version}/gsts/refresh-returns [get]
 func (h *GstsHandler) RefreshGstReturns(c *gin.Context) {
-	err := h.service.RefreshGstReturns()
+	header, ok := GetHeaderValues(c)
+
+	if !ok {
+		return
+	}
+
+	err := h.service.RefreshGstReturns(header.DappsUserId)
 
 	if err != nil {
 		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(err),
