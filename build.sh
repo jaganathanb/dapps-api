@@ -12,6 +12,6 @@ echo "Building for ${arch}..."
 
 CGO_ENABLED=1 GOOS="${GOOS}" GOARCH=${arch} \
          go build -o "../../out/${bin_name}-${arch}.exe"
+done
 
 rm -rf *.syso
-done
