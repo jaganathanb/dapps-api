@@ -1,6 +1,6 @@
 {
   "go.lintTool": "golangci-lint",
-  "go.lintFlags": ["--fast"],
+  "go.lintFlags": ["-c", ".golangci.yml"],
   "editor.formatOnSave": false,
   "go.formatTool": "goimports",
   "go.toolsManagement.autoUpdate": true,
@@ -10,18 +10,5 @@
     "editor.codeActionsOnSave": {
       "source.organizeImports": "always"
     }
-  },
-  "cSpell.words": [
-    "Captch",
-    "godoc",
-    "gorm",
-    "gstin",
-    "gstins",
-    "GSTR",
-    "gsts",
-    "Leakless",
-    "rtntype",
-    "taxp",
-    "TAXPRD"
-  ]
+  }
 }

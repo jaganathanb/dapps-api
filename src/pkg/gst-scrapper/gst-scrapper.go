@@ -22,8 +22,9 @@ import (
 )
 
 type GstDetail struct {
-	Gst     models.Gst
-	Returns []models.GstStatus
+	Gst          models.Gst
+	Returns      []models.GstStatus
+	ErrorMessage string
 }
 
 type GstScrapper struct {
@@ -45,13 +46,16 @@ func NewGstScrapper(cfg *config.Config) *GstScrapper {
 	return gstScrapper
 }
 
-func (s *GstScrapper) ScrapGstPortal(gstins []string) <-chan GstDetail {
+func (s *GstScrapper) ScrapGstPortal(gstins []string) (<-chan GstDetail, error) {
 	quit := make(chan GstDetail)
 
 	defer func() {
 		if err := recover(); err != nil {
-			s.logger.Error(logging.Category(logging.ExternalService), logging.SubCategory(logging.IO), "Panic occured!", err.(map[logging.ExtraKey]interface{}))
-			quit <- GstDetail{}
+			e := err.(error)
+			s.logger.Error(logging.Category(logging.ExternalService), logging.SubCategory(logging.IO), "Panic occured!", nil)
+			quit <- GstDetail{
+				ErrorMessage: e.Error(),
+			}
 		}
 	}()
 
@@ -62,7 +66,7 @@ func (s *GstScrapper) ScrapGstPortal(gstins []string) <-chan GstDetail {
 	if err != nil {
 		s.logger.Error(logging.Category(logging.ExternalService), logging.SubCategory(logging.IO), "Something went wrong!. Check internet connection too!", nil)
 
-		quit <- GstDetail{}
+		return quit, err
 	}
 
 	page.MustWindowMaximize()
@@ -75,7 +79,7 @@ func (s *GstScrapper) ScrapGstPortal(gstins []string) <-chan GstDetail {
 	go s.listenOnGstReturnsEvents(page, done)()
 	go searchAllGsts(landed, gstins, page, done, browser, l, quit)
 
-	return quit
+	return quit, nil
 }
 
 func (s *GstScrapper) listenOnGstReturnsEvents(page *rod.Page, done chan GstDetail) func() {
@@ -119,13 +123,17 @@ func (s *GstScrapper) processCaptcha(requestId proto.NetworkRequestID, page *rod
 		if err == nil {
 			s.landIntoDashboard(page, code, landed)
 		} else {
-			quit <- GstDetail{}
+			quit <- GstDetail{
+				ErrorMessage: "Error while processing the Speech to text.",
+			}
 		}
 
 		s.logger.Info(logging.General, logging.SubCategory(logging.IO), "Landed into Dashboard!", nil)
 	} else {
 		s.logger.Error(logging.Category(logging.ExternalService), logging.SubCategory(logging.IO), "Error in TCP!", nil)
-		quit <- GstDetail{}
+		quit <- GstDetail{
+			ErrorMessage: "Could not get the response for Captch audio.",
+		}
 	}
 }
 
@@ -170,7 +178,9 @@ func (s *GstScrapper) listenOnCaptchaEvents(page *rod.Page, quit chan GstDetail,
 	}, func(e *proto.NetworkLoadingFinished) {
 		if e.RequestID == captchaRequestId {
 			if captchaRetry == 3 {
-				quit <- GstDetail{}
+				quit <- GstDetail{
+					ErrorMessage: "Maximum retry reached for getting Captcha code",
+				}
 			}
 
 			captchaRetry += 1

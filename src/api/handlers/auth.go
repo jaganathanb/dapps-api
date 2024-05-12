@@ -139,36 +139,6 @@ func (h *AuthHandler) GetLoggedInUserDetail(c *gin.Context) {
 	c.JSON(http.StatusOK, helper.GenerateBaseResponse(user, true, helper.Success))
 }
 
-// RegisterLoginByMobileNumber godoc
-// @Summary RegisterLoginByMobileNumber
-// @Description RegisterLoginByMobileNumber
-// @Tags Auth
-// @Accept  json
-// @Produce  json
-// @Param version path int true "Version" Enums(1, 2) default(1)
-// @Param Request body dto.RegisterLoginByMobileRequest true "RegisterLoginByMobileRequest"
-// @Success 201 {object} helper.BaseHttpResponse "Success"
-// @Failure 400 {object} helper.BaseHttpResponse "Failed"
-// @Failure 409 {object} helper.BaseHttpResponse "Failed"
-// @Router /v{version}/auth/login-m [post]
-func (h *AuthHandler) RegisterLoginByMobileNumber(c *gin.Context) {
-	req := new(dto.RegisterLoginByMobileRequest)
-	err := c.ShouldBindJSON(&req)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest,
-			helper.GenerateBaseResponseWithValidationError(nil, false, helper.ValidationError, err))
-		return
-	}
-	token, err := h.service.RegisterLoginByMobileNumber(req)
-	if err != nil {
-		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(err),
-			helper.GenerateBaseResponseWithError(nil, false, helper.InternalError, err))
-		return
-	}
-
-	c.JSON(http.StatusCreated, helper.GenerateBaseResponse(token, true, helper.Success))
-}
-
 // SendOtp godoc
 // @Summary Send otp to user
 // @Description Send otp to user

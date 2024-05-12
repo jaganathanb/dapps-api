@@ -121,11 +121,7 @@ func (s *GstService) UpdateGstStatus(req *dto.UpdateGstReturnStatusRequest) (boo
 
 	tx.Commit()
 
-	if (req.Status == constants.InvoiceEntry && req.ReturnType == constants.GSTR1) || (req.Status == constants.TaxAmountReceived && req.ReturnType == constants.GSTR3B) {
-		go s.scrapGstPortal(req.CreatedBy)
-	} else {
-		s.streamerService.StreamData(StreamMessage{Message: "Either all GSTs are up-to-date or none of the GSTs are ready to be filed"})
-	}
+	go s.scrapGstPortal(req.ModifiedBy)
 
 	return true, nil
 }
@@ -274,34 +270,44 @@ func (s *GstService) scrapGstPortal(userId int) {
 	if len(gstins) > 0 {
 		s.streamerService.StreamData(StreamMessage{Message: fmt.Sprintf("GSTs %s scheduled for return status update", gstins)})
 
-		quit := s.scrapperService.ScrapSite(gstins)
+		quit, err := s.scrapperService.ScrapSite(gstins)
+		if err == nil {
+			go func() {
+				for {
+					select {
+					case details, ok := <-quit:
+						if ok {
+							if details.ErrorMessage == "" {
+								gstDetail = details
+								s.updateGstAndReturns(gsts, gstDetail)
 
-		go func() {
-			for {
-				select {
-				case details, ok := <-quit:
-					if ok {
-						gstDetail = details
-						s.updateGstAndReturns(gsts, gstDetail)
+								fmt.Printf("Got result for GSTIN %s", gstDetail.Gst.Gstin)
+							} else {
+								s.streamerService.StreamData(StreamMessage{Code: "NOTIFICATION", UserId: userId, MessageType: constants.ERROR, Message: details.ErrorMessage})
+							}
+						} else {
+							s.base.Logger.Warn(logging.IO, logging.Api, "Done with scrapping!", nil)
+							s.scrapperRunning = []string{}
 
-						fmt.Printf("Got result for GSTIN %s", gstDetail.Gst.Gstin)
-					} else {
-						s.base.Logger.Warn(logging.IO, logging.Api, "Done with scrapping!", nil)
-						s.scrapperRunning = []string{}
-
-						s.notificationsService.AddNotification(&dto.NotificationsPayload{UserId: userId, BaseDto: dto.BaseDto{CreatedBy: userId}, MessageType: constants.INFO, Message: fmt.Sprintf("GST Return status for GSTINs %s has been updated into system", strings.Join(gstins, ","))})
-						s.streamerService.StreamData(StreamMessage{Code: "REFRESH_GSTS_TABLE"})
-						return
+							s.streamerService.StreamData(StreamMessage{Code: "NOTIFICATION", UserId: userId, MessageType: constants.SUCCESS, Message: fmt.Sprintf("GST Return status for GSTINs %s has been updated into system", strings.Join(gstins, ","))})
+							s.streamerService.StreamData(StreamMessage{Code: "REFRESH_GSTS_TABLE"})
+							return
+						}
 					}
 				}
-			}
-		}()
+			}()
 
-		fmt.Printf("Total records: %d", len(gsts))
+			fmt.Printf("Total records: %d", len(gsts))
 
-		s.base.Logger.Infof("Job scheduled to update %d GSTs", len(gsts))
+			s.base.Logger.Infof("Job scheduled to update %d GSTs", len(gsts))
+		} else {
+			s.streamerService.StreamData(StreamMessage{Message: "Something went wrong!. Could not process Gst Returns.", MessageType: constants.ERROR, Code: "NOTIFICATION"})
+			s.scrapperRunning = []string{}
+		}
+
 	} else {
 		s.streamerService.StreamData(StreamMessage{Message: "Either all GSTs are up-to-date or none of the GSTs are ready to be filed"})
+		s.scrapperRunning = []string{}
 	}
 }
 

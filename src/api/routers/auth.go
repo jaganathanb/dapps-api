@@ -14,5 +14,4 @@ func Auth(router *gin.RouterGroup, cfg *config.Config) {
 	router.POST("/login", h.LoginByUsername)
 	router.POST("/logout", h.LogoutByUsername)
 	router.POST("/register", h.RegisterByUsername)
-	router.POST("/login-m", h.RegisterLoginByMobileNumber)
 }

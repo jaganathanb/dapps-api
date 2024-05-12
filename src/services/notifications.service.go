@@ -13,10 +13,9 @@ import (
 )
 
 type NotificationsService struct {
-	logger          logging.Logger
-	cfg             *config.Config
-	database        *gorm.DB
-	streamerService *StreamerService
+	logger   logging.Logger
+	cfg      *config.Config
+	database *gorm.DB
 }
 
 var notificationsService *NotificationsService
@@ -27,10 +26,9 @@ func NewNotificationsService(cfg *config.Config) *NotificationsService {
 		database := db.GetDb()
 		logger := logging.NewLogger(cfg)
 		notificationsService = &NotificationsService{
-			cfg:             cfg,
-			database:        database,
-			logger:          logger,
-			streamerService: NewStreamerService(cfg),
+			cfg:      cfg,
+			database: database,
+			logger:   logger,
 		}
 	})
 
@@ -60,8 +58,6 @@ func (s *NotificationsService) AddNotification(req *dto.NotificationsPayload) (b
 	}
 
 	tx.Commit()
-
-	s.streamerService.StreamData(StreamMessage{Code: "NOTIFICATION", Message: req.Message, MessageType: req.MessageType, Title: req.Title})
 
 	return true, nil
 }

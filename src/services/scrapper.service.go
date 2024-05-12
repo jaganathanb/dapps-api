@@ -37,6 +37,6 @@ func NewScrapperService(cfg *config.Config) *ScrapperService {
 	return scrapperService
 }
 
-func (s *ScrapperService) ScrapSite(gstins []string) <-chan gst_scrapper.GstDetail {
+func (s *ScrapperService) ScrapSite(gstins []string) (<-chan gst_scrapper.GstDetail, error) {
 	return s.scrapper.ScrapGstPortal(gstins)
 }

@@ -259,64 +259,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/v{version}/auth/login-m": {
-            "post": {
-                "description": "RegisterLoginByMobileNumber",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "RegisterLoginByMobileNumber",
-                "parameters": [
-                    {
-                        "enum": [
-                            1,
-                            2
-                        ],
-                        "type": "integer",
-                        "default": 1,
-                        "description": "Version",
-                        "name": "version",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "RegisterLoginByMobileRequest",
-                        "name": "Request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.RegisterLoginByMobileRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Failed",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
-                        }
-                    },
-                    "409": {
-                        "description": "Failed",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_helper.BaseHttpResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/v{version}/auth/logout": {
             "post": {
                 "description": "Logout the user",
@@ -1867,25 +1809,6 @@ const docTemplate = `{
                 },
                 "street": {
                     "type": "string"
-                }
-            }
-        },
-        "github_com_jaganathanb_dapps-api_api_dto.RegisterLoginByMobileRequest": {
-            "type": "object",
-            "required": [
-                "mobileNumber",
-                "otp"
-            ],
-            "properties": {
-                "mobileNumber": {
-                    "type": "string",
-                    "maxLength": 11,
-                    "minLength": 11
-                },
-                "otp": {
-                    "type": "string",
-                    "maxLength": 6,
-                    "minLength": 6
                 }
             }
         },

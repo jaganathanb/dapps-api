@@ -5,16 +5,18 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/jaganathanb/dapps-api/api/dto"
 	"github.com/jaganathanb/dapps-api/config"
 	"github.com/jaganathanb/dapps-api/constants"
 	"github.com/jaganathanb/dapps-api/pkg/logging"
 )
 
 type StreamerService struct {
-	logger     logging.Logger
-	cfg        *config.Config
-	httpClient http.Client
-	streamer   *Streamer
+	logger              logging.Logger
+	cfg                 *config.Config
+	httpClient          http.Client
+	streamer            *Streamer
+	notificationService *NotificationsService
 }
 
 type StreamMessage struct {
@@ -22,6 +24,7 @@ type StreamMessage struct {
 	MessageType constants.NotificationMessageType `json:"messageType"`
 	Title       string                            `json:"title"`
 	Code        string                            `json:"code"`
+	UserId      int                               `json:"userId"`
 }
 
 type Streamer struct {
@@ -49,7 +52,7 @@ func NewStreamerService(cfg *config.Config) *StreamerService {
 		client := http.Client{}
 		streamer := getNewServer(logger)
 
-		streamerService = &StreamerService{logger: logger, cfg: cfg, httpClient: client, streamer: streamer}
+		streamerService = &StreamerService{logger: logger, cfg: cfg, httpClient: client, streamer: streamer, notificationService: NewNotificationsService(cfg)}
 	})
 
 	return streamerService
@@ -61,6 +64,10 @@ func (s *StreamerService) StreamData(message StreamMessage) {
 	if err != nil {
 		s.logger.Error(logging.IO, logging.Api, err.Error(), nil)
 		return
+	}
+
+	if message.Code == "NOTIFICATION" {
+		s.notificationService.AddNotification(&dto.NotificationsPayload{Message: message.Message, MessageType: message.MessageType, Title: message.Title, UserId: message.UserId, BaseDto: dto.BaseDto{CreatedBy: message.UserId}})
 	}
 
 	s.streamer.Message <- string(msg)
