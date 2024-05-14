@@ -98,6 +98,10 @@ func (s *SettingsService) UpdateSettings(req *dto.SettingsPayload) (*dto.Setting
 
 	tx.Commit()
 
+	s.cfg.Server.Gst.Username = settings.GstUsername
+	s.cfg.Server.Gst.Password = settings.GstPassword
+	s.cfg.Server.Gst.Crontab = settings.Crontab
+
 	return &dto.SettingsPayload{
 		Crontab:     settings.Crontab,
 		GstUsername: settings.GstUsername,

@@ -91,7 +91,7 @@ func (s *GstService) CreateGsts(req *dto.CreateGstsRequest) (string, error) {
 
 	gstins := lo.Map(gsts, func(g dto.Gst, i int) string { return g.Gstin })
 
-	go s.scrapGstPortal(req.CreatedBy)
+	s.scrapGstPortal(req.CreatedBy)
 
 	return fmt.Sprintf("%s gst details already exists. %s gst details entered into the system.", exists, gstins), err
 }
@@ -207,9 +207,6 @@ func (s *GstService) GetGstStatistics() (dto.GstFiledCount, error) {
 }
 
 func (s *GstService) RefreshGstReturns(userId int) error {
-	if s.base.Config.Server.Gst.Username == "" || s.base.Config.Server.Gst.Password == "" {
-		return fmt.Errorf("GST Server login details are not correct!")
-	}
 	go s.scrapGstPortal(userId)
 
 	return nil
@@ -249,6 +246,12 @@ func (s *GstService) scrapGstPortal(userId int) {
 	var gsts []models.Gst
 
 	var gstDetail = gst_scrapper.GstDetail{}
+
+	if s.base.Config.Server.Gst.BaseUrl == "" || s.base.Config.Server.Gst.Username == "" || s.base.Config.Server.Gst.Password == "" {
+		s.streamerService.StreamData(StreamMessage{Message: "GST settings are not available. Please update it from Settings page.", MessageType: constants.ERROR})
+
+		return
+	}
 
 	err := s.base.Database.Joins("LEFT JOIN gst_statuses ON gsts.gstin = gst_statuses.gstin").
 		Where("gsts.locked = ?", false).
