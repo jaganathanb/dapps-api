@@ -93,7 +93,7 @@ func (s *SettingsService) UpdateSettings(req *dto.SettingsPayload) (*dto.Setting
 
 	if crontab != req.Crontab {
 		s.scheduler.RemoveJobs("gst")
-		s.scheduler.AddJob(settings.Crontab, "gst", s.gstService.scrapGstPortal, req.ModifiedBy)
+		s.scheduler.AddJob(settings.Crontab, "gst", s.gstService.scrapGstPortal, -1)
 	}
 
 	tx.Commit()

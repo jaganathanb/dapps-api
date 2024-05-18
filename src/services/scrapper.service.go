@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/jaganathanb/dapps-api/common"
 	"github.com/jaganathanb/dapps-api/config"
 	"github.com/jaganathanb/dapps-api/data/db"
 	gst_scrapper "github.com/jaganathanb/dapps-api/pkg/gst-scrapper"
@@ -37,6 +38,6 @@ func NewScrapperService(cfg *config.Config) *ScrapperService {
 	return scrapperService
 }
 
-func (s *ScrapperService) ScrapSite(gstins []string) (<-chan gst_scrapper.GstDetail, error) {
+func (s *ScrapperService) ScrapSite(gstins []string) (*common.SafeChannel[gst_scrapper.GstDetail], error) {
 	return s.scrapper.ScrapGstPortal(gstins)
 }
