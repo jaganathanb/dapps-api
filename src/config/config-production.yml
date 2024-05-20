@@ -1,0 +1,68 @@
+server:
+  internalPort: ${Deploy:Port}
+  externalPort: ${Deploy:Port}
+  runMode: release
+  username: ${Deploy:Username}
+  password: ${Deploy:Password}
+  gst:
+    baseUrl: 'https://services.gst.gov.in/services/login'
+    username: ${Deploy:GstUsername}
+    password: ${Deploy:GstPassword}
+    crontab: "0 10 * * *"
+assemblyAI:
+  apiKey: '${Deploy:AssemblyApiKey}'
+logger:
+  filePath: ${Deploy:RootFolder}
+  encoding: json
+  level: debug
+  logger: zap
+cors:
+  allowOrigins: "${Deploy:Cors}"
+postgres:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: ""
+  dbName: dapps_db
+  sslMode: disable
+  maxIdleConns: 15
+  maxOpenConns: 100
+  connMaxLifetime: 5
+sqlite3:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: ""
+  dbName: "${Deploy:DbPath}"
+  sslMode: disable
+  maxIdleConns: 15
+  maxOpenConns: 100
+  connMaxLifetime: 5
+redis:
+  host: localhost
+  port: 6379
+  password: ""
+  db: 0
+  dialTimeout: 5
+  readTimeout: 5
+  writeTimeout: 5
+  poolSize: 10
+  poolTimeout: 15
+  idleCheckFrequency: 500
+password:
+  includeChars: true
+  includeDigits: true
+  minLength: 6
+  maxLength: 64
+  includeUppercase: true
+  includeLowercase: true
+otp:
+  expireTime: 120
+  digits: 6
+  limiter: 100
+jwt:
+  secret: ${Deploy:JwtSecret}
+  refreshSecret: ${Deploy:JwtSecret}
+  accessTokenExpireDuration: 1440
+  refreshTokenExpireDuration: 60  
+  

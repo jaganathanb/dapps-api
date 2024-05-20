@@ -1,0 +1,70 @@
+server:
+  internalPort: 
+  externalPort: 
+  runMode: debug
+  db: 'sqlite3'
+  gstApikey: ''
+  gstBaseUrl: "http://localhost:5018/api/v1/"
+  gst:
+    baseUrl: 'https://services.gst.gov.in/services/login'
+    username: ''
+    password: ''
+    crontab: "0 10 * * *"
+  username: ''
+  password: ''
+assemblyAI:
+  apiKey: ''
+logger:
+  filePath: ../logs/
+  encoding: json
+  level: debug
+  logger: zap
+cors:
+  allowOrigins: "*"
+postgres:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: ""
+  dbName: dapps_db
+  sslMode: disable
+  maxIdleConns: 15
+  maxOpenConns: 100
+  connMaxLifetime: 5
+sqlite3:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: ""
+  dbName: C:\DhuruvahApps\Data\
+  sslMode: disable
+  maxIdleConns: 15
+  maxOpenConns: 100
+  connMaxLifetime: 5
+redis:
+  host: localhost
+  port: 6379
+  password: ""
+  db: 0
+  dialTimeout: 5
+  readTimeout: 5
+  writeTimeout: 5
+  poolSize: 10
+  poolTimeout: 15
+  idleCheckFrequency: 500
+password:
+  includeChars: true
+  includeDigits: true
+  minLength: 6
+  maxLength: 64
+  includeUppercase: true
+  includeLowercase: true
+otp:
+  expireTime: 120
+  digits: 6
+  limiter: 100
+jwt:
+  secret: ""
+  refreshSecret: ""
+  accessTokenExpireDuration: 1440
+  refreshTokenExpireDuration: 60

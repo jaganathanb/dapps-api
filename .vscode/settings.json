@@ -1,0 +1,14 @@
+{
+  "go.lintTool": "golangci-lint",
+  "go.lintFlags": ["-c", ".golangci.yml"],
+  "editor.formatOnSave": false,
+  "go.formatTool": "goimports",
+  "go.toolsManagement.autoUpdate": true,
+  "go.vetOnSave": "package",
+  "[go][go.mod][json]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "always"
+    }
+  }
+}

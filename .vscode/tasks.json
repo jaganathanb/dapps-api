@@ -1,0 +1,40 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "swag",
+      "command": "cd src && swag init -g cmd/main.go --parseDependency --parseInternal",
+      "type": "shell"
+    },
+    {
+      "label": "go build",
+      "command": "cd src && go build -v -o DApps.WebApi.exe ./cmd/main.go",
+      "type": "shell",
+      "dependsOn": "swag"
+    },
+    {
+      "label": "Build for 64/32",
+      "type": "shell",
+      "command": "& bash ${workspaceFolder}\\build.sh",
+      "problemMatcher": [],
+      "options": {
+        "shell": {
+          "executable": "C:\\Program Files\\Git\\git-bash.exe"
+        }
+      }
+  },
+    {
+      "label": "go run",
+      "command": "cd src && ./DApps.WebApi.exe",
+      "type": "shell",
+      "dependsOn": "go build"
+    },
+    {
+      "label": "go air",
+      "command": "cd src && air --build.cmd 'go build -v -o DApps.WebApi.exe ./cmd/main.go' --build.bin 'DApps.WebApi.exe'",
+      "type": "shell",
+      "dependsOn": "swag",
+      "problemMatcher": []
+    }
+  ]
+}

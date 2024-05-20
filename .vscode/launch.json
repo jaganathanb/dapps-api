@@ -1,0 +1,50 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Dev: Launch Package",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/src/cmd",
+      "preLaunchTask": "swag",
+      "cwd": "${workspaceFolder}/src",
+      "env": {
+        "APP_ENV": "development",
+        "SERVER_GST_USERNAME": "",
+        "SERVER_GST_PASSWORD": "",
+        "JWT_SECRET": "test",
+        "JWT_REFRESHSECRET": "test",
+        "SQLITE3_PASSWORD": "",
+        "POSTGRES_PASSWORD": "",
+        "REDIS_PASSWORD": "",
+        "SERVER_INTERNALPORT": "8071",
+        "SERVER_EXTERNALPORT": "8071",
+        "SERVER_USERNAME": "",
+        "SERVER_PASSWORD": ""
+      }
+    },
+    {
+      "name": "Prod: Launch Package",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/src/cmd",
+      "preLaunchTask": "swag",
+      "cwd": "${workspaceFolder}/src",
+      "env": {
+        "APP_ENV": "production"
+      }
+    },
+    {
+      "name": "Attach to Process",
+      "type": "go",
+      "request": "attach",
+      "mode": "local",
+      "processId": 0
+    }
+  ]
+}
