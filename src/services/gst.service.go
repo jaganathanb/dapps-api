@@ -348,7 +348,11 @@ func (s *GstService) scrapGstPortal(userId int) {
 
 								s.streamerService.StreamData(StreamMessage{Code: "NOTIFICATION", UserId: userId, MessageType: constants.ERROR, Message: errMsg})
 							} else {
-								errMsg = fmt.Sprintf("Something went wrong!. Though system could able to process %d GSTINs successfully and %d GSTINs failed to process", len(success), count-len(success))
+								if len(success) != 0 {
+									errMsg = fmt.Sprintf("Something went wrong!. Though system could able to process %d GSTINs successfully and %d GSTINs failed to process", len(success), count-len(success))
+								} else {
+									errMsg = fmt.Sprintf("Something went wrong!. %d GSTINs failed to process", count)
+								}
 
 								s.streamerService.StreamData(StreamMessage{Code: "NOTIFICATION", UserId: userId, MessageType: constants.ERROR, Message: errMsg})
 							}

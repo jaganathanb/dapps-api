@@ -34,6 +34,8 @@ func (s *DAppsSpeechToText) SpeechToText(filePath string) (string, error) {
 
 	ctx := context.Background()
 
+	s.logger.Debugf("The assembly AI token is - %s", apiKey)
+
 	client := assemblyai.NewClient(apiKey)
 
 	f, err := os.Open(filePath)
