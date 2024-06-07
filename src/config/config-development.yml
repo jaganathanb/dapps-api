@@ -1,19 +1,17 @@
 server:
-  internalPort: 
+  internalPort: 8071
   externalPort: 
   runMode: debug
   db: 'sqlite3'
-  gstApikey: ''
-  gstBaseUrl: "http://localhost:5018/api/v1/"
   gst:
     baseUrl: 'https://services.gst.gov.in/services/login'
     username: ''
     password: ''
     crontab: "0 10 * * *"
-  username: ''
-  password: ''
+  username: 'admin@dapps.com'
+  password: 'Test@123'
 assemblyAI:
-  apiKey: ''
+  apiKey: 'c11ce14411ae432393eac94001f5cf4d'
 logger:
   filePath: ../logs/
   encoding: json
@@ -36,7 +34,7 @@ sqlite3:
   port: 5432
   user: postgres
   password: ""
-  dbName: C:\DhuruvahApps\Data\
+  dbName: C:\GstData\
   sslMode: disable
   maxIdleConns: 15
   maxOpenConns: 100

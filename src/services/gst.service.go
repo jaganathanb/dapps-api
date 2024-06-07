@@ -61,30 +61,36 @@ func (s *GstService) CreateGsts(req *dto.CreateGstsRequest) (string, error) {
 		return "", err
 	}
 
-	gsts := []dto.Gst{}
-	for _, v := range req.Gsts {
-		if slices.Contains(exists, v.Gstin) {
-			s.base.Logger.Warn(logging.Sqlite3, logging.Select, fmt.Sprintf(service_errors.GstExists, v.Gstin), nil)
-		} else {
-			gsts = append(gsts, v)
-		}
-	}
-
 	tx := s.base.Database.Begin()
 
-	for _, gst := range gsts {
-		err = tx.Create(&models.Gst{
-			Gstin:        gst.Gstin,
-			MobileNumber: gst.MobileNumber,
-			Name:         gst.Name,
-			Tradename:    gst.TradeName,
-			Email:        gst.Email,
-			Type:         gst.Type,
-		}).Error
-		if err != nil {
-			tx.Rollback()
-			s.base.Logger.Error(logging.Sqlite3, logging.Rollback, err.Error(), nil)
-			return "", err
+	gsts := []dto.Gst{}
+	for _, v := range req.Gsts {
+		payload := &models.Gst{
+			Sno:          v.Sno,
+			Fno:          v.Fno,
+			Gstin:        v.Gstin,
+			MobileNumber: v.MobileNumber,
+			Name:         v.Name,
+			Tradename:    v.TradeName,
+			Email:        v.Email,
+			Type:         v.Type,
+		}
+
+		if slices.Contains(exists, v.Gstin) {
+			err = tx.Updates(payload).Error
+			if err != nil {
+				tx.Rollback()
+				s.base.Logger.Error(logging.Sqlite3, logging.Rollback, err.Error(), nil)
+				return "", err
+			}
+			s.base.Logger.Warn(logging.Sqlite3, logging.Update, fmt.Sprintf(service_errors.GstExists, v.Gstin), nil)
+		} else {
+			err = tx.Create(payload).Error
+			if err != nil {
+				tx.Rollback()
+				s.base.Logger.Error(logging.Sqlite3, logging.Rollback, err.Error(), nil)
+				return "", err
+			}
 		}
 	}
 
@@ -122,7 +128,9 @@ func (s *GstService) UpdateGstStatus(req *dto.UpdateGstReturnStatusRequest) (boo
 
 	tx.Commit()
 
-	go s.scrapGstPortal(req.ModifiedBy)
+	if (req.ReturnType == constants.GSTR1 && req.Status == constants.InvoiceEntry) || (req.ReturnType == constants.GSTR3B && req.Status == constants.TaxAmountReceived) {
+		go s.scrapGstPortal(req.ModifiedBy)
+	}
 
 	return true, nil
 }
@@ -189,22 +197,35 @@ func (s *GstService) DeleteGstById(req *dto.RemoveGstRequest) (bool, error) {
 }
 
 func (s *GstService) GetGstStatistics() (dto.GstFiledCount, error) {
-	var totalGstsCount int64
-	s.base.Database.Model(&models.Gst{}).Where("locked = ?", false).Count(&totalGstsCount)
+	var gstins []string
+	s.base.Database.Model(&models.Gst{}).Where("locked = ? AND gsts.status = ?", false, "Active").Select("gstin").Find(&gstins)
 
 	var gstFiledCount dto.GstFiledCount
+	var statuses []models.GstStatus
 
-	err := s.base.Database.Model(&models.GstStatus{}).
-		Select(
-			"COUNT(CASE WHEN status = 'Filed' AND rtntype = 'GSTR1' THEN 1 END) AS GSTR1Count, " +
-				"COUNT(CASE WHEN status = 'Filed' AND rtntype = 'GSTR3B' THEN 1 END) AS GSTR2Count, " +
-				"COUNT(CASE WHEN status = 'Filed' AND rtntype = 'GSTR2' THEN 1 END) AS GSTR3BCount, " +
-				"COUNT(CASE WHEN status = 'Filed' AND rtntype = 'GSTR9' THEN 1 END) AS GSTR9Count").
-		Scan(&gstFiledCount).Error
+	err := s.base.Database.Model(&models.GstStatus{}).Where("gstin in ?", gstins).Select("pending_returns", "rtntype", "ret_prd", "status", "gstin").Find(&statuses).Error
 
-	gstFiledCount.TotalGsts = totalGstsCount
+	if err != nil {
+		return gstFiledCount, err
+	}
+
+	group := lo.GroupBy(statuses, func(st models.GstStatus) constants.GstReturnType { return st.Rtntype })
+
+	currTxp := time.Now().Format(constants.TAXPRD)
+	gstFiledCount.GSTR1Count = getPendingReturnStatus(group[constants.GSTR1], currTxp, constants.GSTR1)
+	gstFiledCount.GSTR3BCount = getPendingReturnStatus(group[constants.GSTR3B], currTxp, constants.GSTR3B)
+	gstFiledCount.GSTR2Count = getPendingReturnStatus(group[constants.GSTR2], currTxp, constants.GSTR2)
+	gstFiledCount.GSTR9Count = getPendingReturnStatus(group[constants.GSTR9], currTxp, constants.GSTR9)
+
+	gstFiledCount.TotalGsts = int64(len(gstins))
 
 	return gstFiledCount, err
+}
+
+func getPendingReturnStatus(statuses []models.GstStatus, currTxp string, retType constants.GstReturnType) int64 {
+	return int64(len(lo.Filter(statuses, func(st models.GstStatus, i int) bool {
+		return len(lo.Filter(st.PendingReturns, func(ss string, j int) bool { return ss != currTxp && st.Rtntype == retType })) > 0
+	})))
 }
 
 func (s *GstService) RefreshGstReturns(userId int) error {
@@ -271,8 +292,20 @@ func (s *GstService) scrapGstPortal(userId int) {
 	gstins = lo.Uniq(slices.Concat(left, right))
 	s.scrapperRunning = gstins
 
-	if len(gstins) > 0 {
-		s.streamerService.StreamData(StreamMessage{Message: fmt.Sprintf("GSTs %s scheduled for return status update", gstins)})
+	count := len(gstins)
+
+	if count > 0 {
+		errMsg := fmt.Sprintf("%d GSTs scheduled for return status update", count)
+
+		if len(gstins) > 5 {
+			errMsg = fmt.Sprintf("GSTIN %s and %d+ more has been scheduled for GST Return status", gstins[0], int(math.Floor(float64(count/5)*5)))
+		} else if count == 1 {
+			errMsg = fmt.Sprintf("GSTIN %s has been for GST Return status", gstins[0])
+		} else {
+			errMsg = fmt.Sprintf("GSTIN %s and %d more has been GST Return status", gstins[0], count-1)
+		}
+
+		s.streamerService.StreamData(StreamMessage{Message: errMsg, UserId: userId})
 
 		quit, err := s.scrapperService.ScrapSite(gstins)
 		if err == nil {
@@ -349,6 +382,7 @@ func (s *GstService) updateGstAndReturns(gsts []models.Gst, gstDetail gst_scrapp
 
 		gstDetail.Gst.MobileNumber = gst.MobileNumber
 		gstDetail.Gst.Email = gst.Email
+		gstDetail.Gst.Locked = gstDetail.Gst.Status != "Active"
 		gstDetail.Gst.ModifiedAt = time.Now()
 
 		err := tx.Model(&models.Gst{}).Where("gstin = ?", gst.Gstin).Updates(gstDetail.Gst).Error
@@ -479,7 +513,7 @@ func getGstReturn(filed []models.GstStatus, pendingCount int, lastTaxPeriod time
 		newReturnsStatus.TaxPrd = time.Month(lastTaxPeriod.Month() + 1).String()
 
 		if isNewEntry {
-			newReturnsStatus.Status = constants.CallForInvoice
+			setReturnStatus(newReturnsStatus)
 		}
 	} else {
 		if lastFiledDate.Before(utils.StartOfMonth(time.Now()).AddDate(0, 1, dueDays)) {
@@ -491,13 +525,26 @@ func getGstReturn(filed []models.GstStatus, pendingCount int, lastTaxPeriod time
 			newReturnsStatus.Dof = ""
 			newReturnsStatus.RetPrd = lastTaxPeriod.AddDate(0, 1, 0).Format(constants.TAXPRD)
 			newReturnsStatus.TaxPrd = lastTaxPeriod.Month().String()
-			newReturnsStatus.Status = constants.CallForInvoice
+			setReturnStatus(newReturnsStatus)
 		}
 	}
 
 	newReturnsStatus.PendingReturns = pendings
 
 	return newReturnsStatus
+}
+
+func setReturnStatus(newReturnsStatus models.GstStatus) {
+	switch newReturnsStatus.Rtntype {
+	case constants.GSTR1:
+		newReturnsStatus.Status = constants.CallForInvoice
+		break
+	case constants.GSTR3B:
+		newReturnsStatus.Status = constants.TaxPayable
+		break
+	default:
+		newReturnsStatus.Status = constants.CallForInvoice
+	}
 }
 
 func getRetPrdFromTaxp(taxp, fy string, returnType constants.GstReturnType) string {

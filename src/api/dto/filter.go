@@ -45,7 +45,7 @@ func (p *PaginationInputWithFilter) GetOffset() int {
 
 func (p *PaginationInputWithFilter) GetPageSize() int {
 	if p.PageSize == 0 {
-		p.PageSize = 10
+		p.PageSize = -1 // 10 by default. -1 for all the records
 	}
 	return p.PageSize
 }

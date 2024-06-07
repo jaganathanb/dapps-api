@@ -1529,6 +1529,9 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "fno": {
+                    "type": "string"
+                },
                 "gstStatuses": {
                     "type": "array",
                     "items": {
@@ -1554,6 +1557,9 @@ const docTemplate = `{
                     "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.PermenantAddress"
                 },
                 "registrationDate": {
+                    "type": "string"
+                },
+                "sno": {
                     "type": "string"
                 },
                 "tradeName": {
@@ -1583,6 +1589,9 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "fno": {
+                    "type": "string"
+                },
                 "gstStatuses": {
                     "type": "array",
                     "items": {
@@ -1608,6 +1617,9 @@ const docTemplate = `{
                     "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.PermenantAddress"
                 },
                 "registrationDate": {
+                    "type": "string"
+                },
+                "sno": {
                     "type": "string"
                 },
                 "tradeName": {

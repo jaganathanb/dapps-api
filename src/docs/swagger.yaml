@@ -83,6 +83,8 @@ definitions:
     properties:
       email:
         type: string
+      fno:
+        type: string
       gstStatuses:
         items:
           $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.GstStatus'
@@ -100,6 +102,8 @@ definitions:
       permenantAddress:
         $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.PermenantAddress'
       registrationDate:
+        type: string
+      sno:
         type: string
       tradeName:
         type: string
@@ -119,6 +123,8 @@ definitions:
     properties:
       email:
         type: string
+      fno:
+        type: string
       gstStatuses:
         items:
           $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.GstStatus'
@@ -136,6 +142,8 @@ definitions:
       permenantAddress:
         $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.PermenantAddress'
       registrationDate:
+        type: string
+      sno:
         type: string
       tradeName:
         type: string

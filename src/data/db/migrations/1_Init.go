@@ -18,6 +18,25 @@ func Up_1(cfg *config.Config) {
 	createTables(database)
 	createDefaultUserInformation(database, cfg)
 	createOrUpdateSettings(database, cfg)
+
+	//actual migrations
+	alterColumns(database)
+}
+
+func alterColumns(db *gorm.DB) {
+	err := db.Migrator().AddColumn(&models.Gst{}, "Sno")
+	if err != nil {
+		logger.Error(logging.Sqlite3, logging.Migration, err.Error(), nil)
+	} else {
+		logger.Info(logging.Sqlite3, logging.Migration, "Column Sno created", nil)
+	}
+
+	err = db.Migrator().AddColumn(&models.Gst{}, "Fno")
+	if err != nil {
+		logger.Error(logging.Sqlite3, logging.Migration, err.Error(), nil)
+	} else {
+		logger.Info(logging.Sqlite3, logging.Migration, "Column Fno created", nil)
+	}
 }
 
 func createTables(database *gorm.DB) {

@@ -1518,6 +1518,9 @@
                 "email": {
                     "type": "string"
                 },
+                "fno": {
+                    "type": "string"
+                },
                 "gstStatuses": {
                     "type": "array",
                     "items": {
@@ -1543,6 +1546,9 @@
                     "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.PermenantAddress"
                 },
                 "registrationDate": {
+                    "type": "string"
+                },
+                "sno": {
                     "type": "string"
                 },
                 "tradeName": {
@@ -1572,6 +1578,9 @@
                 "email": {
                     "type": "string"
                 },
+                "fno": {
+                    "type": "string"
+                },
                 "gstStatuses": {
                     "type": "array",
                     "items": {
@@ -1597,6 +1606,9 @@
                     "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.PermenantAddress"
                 },
                 "registrationDate": {
+                    "type": "string"
+                },
+                "sno": {
                     "type": "string"
                 },
                 "tradeName": {

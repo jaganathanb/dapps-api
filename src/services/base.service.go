@@ -210,6 +210,8 @@ func Paginate[T any, Tr any](pagination *dto.PaginationInputWithFilter, preloads
 
 func prepareGstDTO(data models.Gst) dto.GetGstResponse {
 	return dto.GetGstResponse{
+		Fno:              data.Fno,
+		Sno:              data.Sno,
 		Gstin:            data.Gstin,
 		Name:             data.Name,
 		TradeName:        data.Tradename,
@@ -257,7 +259,7 @@ func getQuery[T any](filter *dto.DynamicFilter) string {
 	t := new(T)
 	typeT := reflect.TypeOf(*t)
 	query := make([]string, 0)
-	query = append(query, "deleted_by is null")
+	query = append(query, "deleted_by is null AND status = 'Active'")
 	if filter.Filter != nil {
 		for name, filter := range filter.Filter {
 			fld, ok := typeT.FieldByName(name)

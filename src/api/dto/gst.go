@@ -46,6 +46,8 @@ type RemoveGstRequest struct {
 }
 
 type Gst struct {
+	Sno              string           `json:"sno"`
+	Fno              string           `json:"fno"`
 	Gstin            string           `json:"gstin"`
 	Name             string           `json:"name"`
 	TradeName        string           `json:"tradeName"`
