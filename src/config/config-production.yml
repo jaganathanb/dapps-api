@@ -1,6 +1,6 @@
 server:
-  internalPort: ${Deploy:Port}
-  externalPort: ${Deploy:Port}
+  internalPort: ${Deploy:ApiPort}
+  externalPort: ${Deploy:ApiPort}
   runMode: release
   username: ${Deploy:Username}
   password: ${Deploy:Password}
@@ -12,7 +12,7 @@ server:
 assemblyAI:
   apiKey: '${Deploy:AssemblyApiKey}'
 logger:
-  filePath: ${Deploy:RootFolder}
+  filePath: ${Deploy:RootFolder}api\\logs
   encoding: json
   level: debug
   logger: zap

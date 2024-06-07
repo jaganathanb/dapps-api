@@ -218,6 +218,7 @@ func (s *GstScrapper) landIntoDashboard(page *rod.Page, code string, landed *com
 
 func (s *GstScrapper) listenOnCaptchaEvents(page *rod.Page, landed *common.SafeChannel[bool], quit *common.SafeChannel[GstDetail]) func() {
 	var captchaRequestId proto.NetworkRequestID
+	var changePasswordRequestId proto.NetworkRequestID
 	captchaRetry := 0
 
 	return page.EachEvent(func(e *proto.NetworkRequestWillBeSent) {
@@ -227,6 +228,8 @@ func (s *GstScrapper) listenOnCaptchaEvents(page *rod.Page, landed *common.SafeC
 		case strings.Contains(e.Request.URL, "/audiocaptcha") && e.Request.Method != "OPTIONS":
 			captchaRequestId = e.RequestID
 			break
+		case strings.Contains(e.Request.URL, "auth/changepassword") && e.Request.Method != "OPTIONS":
+			changePasswordRequestId = e.RequestID
 		}
 
 	}, func(e *proto.NetworkLoadingFinished) {
@@ -236,6 +239,17 @@ func (s *GstScrapper) listenOnCaptchaEvents(page *rod.Page, landed *common.SafeC
 
 				if !landed.IsClosed() {
 					landed.C <- false
+				}
+			}
+
+			if changePasswordRequestId != "" {
+				s.logger.Errorf("User has to change the password for GST credentials")
+
+				if !quit.IsClosed() {
+					quit.C <- GstDetail{
+						ErrorMessage: "GST credentials has expired. Please update the settings with new credentials.",
+					}
+					quit.SafeClose()
 				}
 			}
 
