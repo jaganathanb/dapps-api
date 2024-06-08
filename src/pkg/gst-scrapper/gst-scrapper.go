@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"regexp"
 	"strings"
@@ -25,6 +26,11 @@ import (
 type GstDetail struct {
 	Gst          models.Gst
 	Returns      []models.GstStatus
+	ErrorMessage string
+}
+
+type DashboardDetail struct {
+	Landed       bool
 	ErrorMessage string
 }
 
@@ -76,19 +82,19 @@ func (s *GstScrapper) ScrapGstPortal(gstins []string) (*common.SafeChannel[GstDe
 
 	page.MustWindowMaximize()
 
-	landed := common.NewSafeChannel[bool]()
+	landed := common.NewSafeChannel[DashboardDetail]()
 	done := common.NewSafeChannel[GstDetail]()
 
-	go s.listenOnCaptchaEvents(page, landed, quit)()
+	go s.listenOnCaptchaEvents(page, landed)()
 	go s.inputCaptch(page, landed)
 
-	go s.listenOnGstReturnsEvents(page, done, quit)()
+	go s.listenOnGstReturnsEvents(page, done)()
 	go s.searchAllGsts(landed, gstins, page, done, browser, l, quit)
 
 	return quit, nil
 }
 
-func (s *GstScrapper) listenOnGstReturnsEvents(page *rod.Page, done *common.SafeChannel[GstDetail], quit *common.SafeChannel[GstDetail]) func() {
+func (s *GstScrapper) listenOnGstReturnsEvents(page *rod.Page, done *common.SafeChannel[GstDetail]) func() {
 	var gstRequestId proto.NetworkRequestID
 	var returnsRequestId proto.NetworkRequestID
 	var gstDetail GstDetail
@@ -118,21 +124,23 @@ func (s *GstScrapper) listenOnGstReturnsEvents(page *rod.Page, done *common.Safe
 			}
 		}
 	}, func(e *proto.NetworkLoadingFailed) {
-		gstDetail.ErrorMessage = e.ErrorText
+		if e.Type == proto.NetworkResourceTypeFetch || e.Type == proto.NetworkResourceTypeXHR || e.Type == proto.NetworkResourceTypeMedia || e.Type == proto.NetworkResourceTypeDocument {
 
-		if !quit.IsClosed() {
-			quit.C <- gstDetail
-			quit.SafeClose()
+			gstDetail.ErrorMessage = e.ErrorText
+
+			if !done.IsClosed() {
+				done.C <- gstDetail
+			}
 		}
 	})
 }
 
-func (s *GstScrapper) processCaptcha(requestId proto.NetworkRequestID, page *rod.Page, landed *common.SafeChannel[bool]) {
+func (s *GstScrapper) processCaptcha(requestId proto.NetworkRequestID, page *rod.Page, landed *common.SafeChannel[DashboardDetail]) {
 	defer common.RecoverFromPanic(func(err any) {
 		s.logger.Errorf("Error recovered!. %s", err)
 
 		if !landed.IsClosed() {
-			landed.C <- false
+			landed.C <- DashboardDetail{}
 		}
 	})
 
@@ -146,7 +154,7 @@ func (s *GstScrapper) processCaptcha(requestId proto.NetworkRequestID, page *rod
 			s.logger.Errorf("Error while processing the Speech to text. Error - %s", err.Error())
 
 			if !landed.IsClosed() {
-				landed.C <- false
+				landed.C <- DashboardDetail{}
 			}
 		} else {
 			code, err := s.speechService.SpeechToText("test.mp3")
@@ -156,7 +164,7 @@ func (s *GstScrapper) processCaptcha(requestId proto.NetworkRequestID, page *rod
 				s.logger.Errorf("Error while processing the Speech to text. The code is - %s", code)
 
 				if !landed.IsClosed() {
-					landed.C <- false
+					landed.C <- DashboardDetail{}
 				}
 			}
 		}
@@ -164,17 +172,17 @@ func (s *GstScrapper) processCaptcha(requestId proto.NetworkRequestID, page *rod
 		s.logger.Errorf("Error in TCP, Could not get the response for Captch audio. - %s", err.Error())
 
 		if !landed.IsClosed() {
-			landed.C <- false
+			landed.C <- DashboardDetail{}
 		}
 	}
 }
 
-func (s *GstScrapper) landIntoDashboard(page *rod.Page, code string, landed *common.SafeChannel[bool]) {
+func (s *GstScrapper) landIntoDashboard(page *rod.Page, code string, landed *common.SafeChannel[DashboardDetail]) {
 	defer common.RecoverFromPanic(func(err any) {
 		s.logger.Errorf("Error recovered!. %s", err)
 
 		if !landed.IsClosed() {
-			landed.C <- false
+			landed.C <- DashboardDetail{}
 		}
 	})
 
@@ -192,33 +200,79 @@ func (s *GstScrapper) landIntoDashboard(page *rod.Page, code string, landed *com
 	if errors.Is(err, context.DeadlineExceeded) {
 		s.logger.Errorf("Timeout while looking for dashboard widget - Reason: %s", err.Error())
 
-		if captcha.MustParent().MustParent().MustHas(".err") {
-			go s.inputCaptch(page, landed)
+		err := rod.Try(func() {
+			page.Timeout(time.Duration(15 * time.Second)).MustElement("#submitpwd")
+		})
+
+		if err == nil {
+			if !landed.IsClosed() {
+				landed.C <- DashboardDetail{
+					ErrorMessage: fmt.Sprintf("NOTIFICATION|GST credential needs to be changed for the GST user id %s", s.cfg.Server.Gst.Username),
+				}
+
+				return
+			}
+		}
+
+		var errMsg *rod.Element
+		err = rod.Try(func() {
+			errMsg = page.Timeout(time.Duration(15 * time.Second)).MustElement("span.err")
+		})
+
+		if err == nil {
+			msg, _ := errMsg.Text()
+
+			if strings.Contains(msg, "Enter valid Letters shown") {
+				go s.inputCaptch(page, landed)
+
+				return
+			}
+		}
+
+		err = rod.Try(func() {
+			errMsg = page.Timeout(time.Duration(15 * time.Second)).MustElement(".err")
+		})
+
+		if err == nil {
+			msg, _ := errMsg.Text()
+
+			if strings.Contains(msg, "Invalid Username or Password. Please try again.") {
+				if !landed.IsClosed() {
+					landed.C <- DashboardDetail{
+						ErrorMessage: "NOTIFICATION|GST username or password is invalid. Please update GST credential and try again.",
+					}
+				}
+			} else {
+				if !landed.IsClosed() {
+					landed.C <- DashboardDetail{}
+				}
+			}
 		} else {
 			s.logger.Errorf("Something went wrong while looking for dashboard widget - Reason: %s", err.Error())
 
 			if !landed.IsClosed() {
-				landed.C <- false
+				landed.C <- DashboardDetail{}
 			}
 		}
 	} else if err != nil {
 		s.logger.Errorf("Something went wrong while looking for dashboard widget - Reason: %s", err.Error())
 
 		if !landed.IsClosed() {
-			landed.C <- false
+			landed.C <- DashboardDetail{}
 		}
 	} else {
 		s.logger.Infof("Successfully landed into dashboard widget")
 
 		if !landed.IsClosed() {
-			landed.C <- true
+			landed.C <- DashboardDetail{
+				Landed: true,
+			}
 		}
 	}
 }
 
-func (s *GstScrapper) listenOnCaptchaEvents(page *rod.Page, landed *common.SafeChannel[bool], quit *common.SafeChannel[GstDetail]) func() {
+func (s *GstScrapper) listenOnCaptchaEvents(page *rod.Page, landed *common.SafeChannel[DashboardDetail]) func() {
 	var captchaRequestId proto.NetworkRequestID
-	var changePasswordRequestId proto.NetworkRequestID
 	captchaRetry := 0
 
 	return page.EachEvent(func(e *proto.NetworkRequestWillBeSent) {
@@ -228,8 +282,6 @@ func (s *GstScrapper) listenOnCaptchaEvents(page *rod.Page, landed *common.SafeC
 		case strings.Contains(e.Request.URL, "/audiocaptcha") && e.Request.Method != "OPTIONS":
 			captchaRequestId = e.RequestID
 			break
-		case strings.Contains(e.Request.URL, "auth/changepassword") && e.Request.Method != "OPTIONS":
-			changePasswordRequestId = e.RequestID
 		}
 
 	}, func(e *proto.NetworkLoadingFinished) {
@@ -238,18 +290,7 @@ func (s *GstScrapper) listenOnCaptchaEvents(page *rod.Page, landed *common.SafeC
 				s.logger.Errorf("Maximum retry reached for getting Captcha code")
 
 				if !landed.IsClosed() {
-					landed.C <- false
-				}
-			}
-
-			if changePasswordRequestId != "" {
-				s.logger.Errorf("User has to change the password for GST credentials")
-
-				if !quit.IsClosed() {
-					quit.C <- GstDetail{
-						ErrorMessage: "GST credentials has expired. Please update the settings with new credentials.",
-					}
-					quit.SafeClose()
+					landed.C <- DashboardDetail{}
 				}
 			}
 
@@ -259,25 +300,22 @@ func (s *GstScrapper) listenOnCaptchaEvents(page *rod.Page, landed *common.SafeC
 	}, func(e *proto.NetworkLoadingFailed) {
 		s.logger.Errorf("NetworkLoadingFailed: %s", e.ErrorText)
 
-		if !landed.IsClosed() {
-			landed.C <- false
-		} else {
-			if !quit.IsClosed() {
-				quit.C <- GstDetail{
+		if e.Type == proto.NetworkResourceTypeFetch || e.Type == proto.NetworkResourceTypeXHR || e.Type == proto.NetworkResourceTypeMedia || e.Type == proto.NetworkResourceTypeDocument {
+			if !landed.IsClosed() {
+				landed.C <- DashboardDetail{
 					ErrorMessage: e.ErrorText,
 				}
-				quit.SafeClose()
 			}
 		}
 	})
 }
 
-func (s *GstScrapper) inputCaptch(page *rod.Page, landed *common.SafeChannel[bool]) {
+func (s *GstScrapper) inputCaptch(page *rod.Page, landed *common.SafeChannel[DashboardDetail]) {
 	defer common.RecoverFromPanic(func(err any) {
 		s.logger.Errorf("Error recovered!. %s", err)
 
 		if !landed.IsClosed() {
-			landed.C <- false
+			landed.C <- DashboardDetail{}
 		}
 	})
 
@@ -294,20 +332,20 @@ func (s *GstScrapper) inputCaptch(page *rod.Page, landed *common.SafeChannel[boo
 	page.MustWaitRequestIdle()()
 }
 
-func (s *GstScrapper) searchAllGsts(landed *common.SafeChannel[bool], gstins []string, page *rod.Page, done *common.SafeChannel[GstDetail], browser *rod.Browser, l *launcher.Launcher, quit *common.SafeChannel[GstDetail]) {
+func (s *GstScrapper) searchAllGsts(landed *common.SafeChannel[DashboardDetail], gstins []string, page *rod.Page, done *common.SafeChannel[GstDetail], browser *rod.Browser, l *launcher.Launcher, quit *common.SafeChannel[GstDetail]) {
 	defer common.RecoverFromPanic(func(err any) {
 		s.logger.Errorf("Error recovered!. %s", err)
 
 		quit.SafeClose()
 	})
 
-	isLanded := false
+	dashboardDetail := DashboardDetail{}
 
 	if !landed.IsClosed() {
-		isLanded = <-landed.C
+		dashboardDetail = <-landed.C
 	}
 
-	if isLanded {
+	if dashboardDetail.Landed {
 		landed.SafeClose()
 
 		for _, gstin := range gstins {
@@ -320,6 +358,10 @@ func (s *GstScrapper) searchAllGsts(landed *common.SafeChannel[bool], gstins []s
 					quit.C <- data
 				}
 			}
+		}
+	} else {
+		quit.C <- GstDetail{
+			ErrorMessage: dashboardDetail.ErrorMessage,
 		}
 	}
 

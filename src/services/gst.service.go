@@ -325,6 +325,13 @@ func (s *GstService) scrapGstPortal(userId int) {
 							} else {
 								failed += 1
 								s.base.Logger.Errorf("Failed to fetch data for a GSTIN - %s", details.ErrorMessage)
+
+								messages := strings.Split(details.ErrorMessage, "|")
+
+								if len(messages) > 1 && messages[0] == "NOTIFICATION" {
+									errMsg = messages[1]
+									s.streamerService.StreamData(StreamMessage{Code: "NOTIFICATION", UserId: userId, MessageType: constants.ERROR, Message: errMsg})
+								}
 							}
 						} else {
 							s.base.Logger.Infof("Done with scrapping for %s GSTINs", gstins)
@@ -350,14 +357,13 @@ func (s *GstService) scrapGstPortal(userId int) {
 							} else {
 								if len(success) != 0 {
 									errMsg = fmt.Sprintf("Something went wrong!. Though system could able to process %d GSTINs successfully and %d GSTINs failed to process", len(success), count-len(success))
+									s.streamerService.StreamData(StreamMessage{Code: "REFRESH_GSTS_TABLE"})
 								} else {
 									errMsg = fmt.Sprintf("Something went wrong!. %d GSTINs failed to process", count)
 								}
 
 								s.streamerService.StreamData(StreamMessage{Code: "NOTIFICATION", UserId: userId, MessageType: constants.ERROR, Message: errMsg})
 							}
-
-							s.streamerService.StreamData(StreamMessage{Code: "REFRESH_GSTS_TABLE"})
 
 							return
 						}

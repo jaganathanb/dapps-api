@@ -100,18 +100,26 @@ func createOrUpdateSettings(database *gorm.DB, cfg *config.Config) {
 	if err == nil {
 		if cfg.Server.Gst.Username != "" {
 			settings.GstUsername = cfg.Server.Gst.Username
+		} else {
+			cfg.Server.Gst.Username = settings.GstUsername
 		}
 
 		if cfg.Server.Gst.Password != "" {
 			settings.GstPassword = cfg.Server.Gst.Password
+		} else {
+			cfg.Server.Gst.Password = settings.GstPassword
 		}
 
 		if cfg.Server.Gst.BaseUrl != "" {
 			settings.GstBaseUrl = cfg.Server.Gst.BaseUrl
+		} else {
+			cfg.Server.Gst.BaseUrl = settings.GstBaseUrl
 		}
 
 		if cfg.Server.Gst.Crontab != "" {
 			settings.Crontab = cfg.Server.Gst.Crontab
+		} else {
+			cfg.Server.Gst.Crontab = settings.Crontab
 		}
 
 		if settings.Id == 0 {
