@@ -99,6 +99,8 @@ definitions:
         type: string
       name:
         type: string
+      password:
+        type: string
       permenantAddress:
         $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.PermenantAddress'
       registrationDate:
@@ -108,6 +110,8 @@ definitions:
       tradeName:
         type: string
       type:
+        type: string
+      username:
         type: string
     type: object
   github_com_jaganathanb_dapps-api_api_dto.GetOtpRequest:
@@ -139,6 +143,8 @@ definitions:
         type: string
       name:
         type: string
+      password:
+        type: string
       permenantAddress:
         $ref: '#/definitions/github_com_jaganathanb_dapps-api_api_dto.PermenantAddress'
       registrationDate:
@@ -148,6 +154,8 @@ definitions:
       tradeName:
         type: string
       type:
+        type: string
+      username:
         type: string
     type: object
   github_com_jaganathanb_dapps-api_api_dto.GstFiledCount:

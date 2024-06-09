@@ -1553,6 +1553,9 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "password": {
+                    "type": "string"
+                },
                 "permenantAddress": {
                     "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.PermenantAddress"
                 },
@@ -1566,6 +1569,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "type": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -1613,6 +1619,9 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "password": {
+                    "type": "string"
+                },
                 "permenantAddress": {
                     "$ref": "#/definitions/github_com_jaganathanb_dapps-api_api_dto.PermenantAddress"
                 },
@@ -1626,6 +1635,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "type": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }

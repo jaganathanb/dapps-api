@@ -22,6 +22,8 @@ type Gst struct {
 	Constitution     string                            `json:"ctb"`
 	Type             string                            `json:"dty"`
 	Status           string                            `json:"sts"`
+	Username         string                            `json:"username"`
+	Password         string                            `json:"password"`
 	LastUpdateDate   time.Time                         `json:"lastUpdateDate"`
 	CancellationDate time.Time                         `json:"cancellationDate"`
 	Nature           sqlite_custom_type.SqliteStrArray `json:"nba,omitempty;type:text[]"`

@@ -37,6 +37,20 @@ func alterColumns(db *gorm.DB) {
 	} else {
 		logger.Info(logging.Sqlite3, logging.Migration, "Column Fno created", nil)
 	}
+
+	err = db.Migrator().AddColumn(&models.Gst{}, "Username")
+	if err != nil {
+		logger.Error(logging.Sqlite3, logging.Migration, err.Error(), nil)
+	} else {
+		logger.Info(logging.Sqlite3, logging.Migration, "Column Username created", nil)
+	}
+
+	err = db.Migrator().AddColumn(&models.Gst{}, "Password")
+	if err != nil {
+		logger.Error(logging.Sqlite3, logging.Migration, err.Error(), nil)
+	} else {
+		logger.Info(logging.Sqlite3, logging.Migration, "Column Password created", nil)
+	}
 }
 
 func createTables(database *gorm.DB) {

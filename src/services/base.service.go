@@ -220,6 +220,8 @@ func prepareGstDTO(data models.Gst) dto.GetGstResponse {
 		LastUpdateDate:   data.LastUpdateDate,
 		Locked:           data.Locked,
 		MobileNumber:     data.MobileNumber,
+		Username:         data.Username,
+		Password:         data.Password,
 		GstStatuses:      prepareGstStatusDTO(data.GstStatuses),
 		PermenantAddress: dto.PermenantAddress{
 			Street:   data.Pradr.St,

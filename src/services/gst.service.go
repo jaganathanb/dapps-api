@@ -74,6 +74,8 @@ func (s *GstService) CreateGsts(req *dto.CreateGstsRequest) (string, error) {
 			Tradename:    v.TradeName,
 			Email:        v.Email,
 			Type:         v.Type,
+			Username:     v.Username,
+			Password:     v.Password,
 		}
 
 		if slices.Contains(exists, v.Gstin) {

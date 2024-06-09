@@ -57,6 +57,8 @@ type Gst struct {
 	LastUpdateDate   time.Time        `json:"lastUpdateDate"`
 	Locked           bool             `json:"locked"`
 	MobileNumber     string           `json:"mobileNumber"`
+	Username         string           `json:"username"`
+	Password         string           `json:"password"`
 	GstStatuses      []GstStatus      `json:"gstStatuses"`
 	PermenantAddress PermenantAddress `json:"permenantAddress"`
 }
