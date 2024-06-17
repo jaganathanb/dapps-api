@@ -93,7 +93,12 @@ func (s *GstScrapper) runGstProcesses(gsts []models.Gst, browser *rod.Browser, l
 
 		dashboard := s.login(page, gst, useCredentialFromSettings)
 
-		gstDetail := s.getGstReturnsDetail(page, dashboard)
+		var gstDetail GstDetail
+		if dashboard.Landed {
+			gstDetail = s.getGstReturnsDetail(page, gst.Gstin)
+		} else {
+			gstDetail.ErrorMessage = dashboard.ErrorMessage
+		}
 
 		page.Close()
 
@@ -119,34 +124,30 @@ func (s *GstScrapper) runGstProcesses(gsts []models.Gst, browser *rod.Browser, l
 	quit.SafeClose()
 }
 
-func (s *GstScrapper) getGstReturnsDetail(page *rod.Page, dashboard DashboardDetail) GstDetail {
-	if !dashboard.Landed {
-		return GstDetail{ErrorMessage: dashboard.ErrorMessage}
-	} else {
-		gstData, _, err := s.extractResponseFromHttpRequest(page, "auth/profile/detail", ".dp-widgt > a.tp-pfl-lnk", "/View Profile /")
+func (s *GstScrapper) getGstReturnsDetail(page *rod.Page, gstin string) GstDetail {
+	gstData, _, err := s.extractResponseFromHttpRequest(page, "auth/profile/detail", ".dp-widgt > a.tp-pfl-lnk", "/View Profile /")
+
+	if err == nil {
+		var gst models.Gst
+		json.Unmarshal([]byte(gstData.Body), &gst)
+
+		page.MustElementR(".nav > .menuList > a.dropdown-toggle", "/Services/").MustClick() // Click Services
+		page.MustElementR(".smenu > .has-sub > a", "/Returns/").MustHover()                 // Hover Returns
+
+		returns, _, err := s.extractResponseFromHttpRequest(page, "/returns/auth/api/returnstatus", "ul.isubmenu.ret.post > li > a", "/Track Return Status/")
 
 		if err == nil {
-			var gst models.Gst
-			json.Unmarshal([]byte(gstData.Body), &gst)
+			var statuses []models.GstStatus
+			json.Unmarshal([]byte(returns.Body), &statuses)
 
-			page.MustElementR(".nav > .menuList > a.dropdown-toggle", "/Services/").MustClick() // Click Services
-			page.MustElementR(".smenu > .has-sub > a", "/Returns/").MustHover()                 // Hover Returns
+			s.logger.Infof("The returns & gst are : %v --- %v", statuses, gst)
 
-			returns, _, err := s.extractResponseFromHttpRequest(page, "/returns/auth/api/returnstatus", "ul.isubmenu.ret.post > li > a", "/Track Return Status/")
-
-			if err == nil {
-				var statuses []models.GstStatus
-				json.Unmarshal([]byte(returns.Body), &statuses)
-
-				s.logger.Infof("The returns & gst are : %v --- %v", statuses, gst)
-
-				return GstDetail{Gst: gst, Returns: statuses}
-			} else {
-				return GstDetail{ErrorMessage: "Not able to extract response from Gst API calls"}
-			}
+			return GstDetail{Gst: gst, Returns: statuses}
 		} else {
-			return GstDetail{ErrorMessage: "Not able to extract response from Gst API calls"}
+			return GstDetail{ErrorMessage: fmt.Sprintf("Not able to extract response from Gst API calls for GSTIN %s", gstin)}
 		}
+	} else {
+		return GstDetail{ErrorMessage: fmt.Sprintf("Not able to extract response from Gst API calls for GSTIN %s", gstin)}
 	}
 }
 
@@ -207,14 +208,14 @@ func (s *GstScrapper) login(page *rod.Page, gst models.Gst, useCredentialFromSet
 		err := s.setUsernamePassword(page, gst, useCredentialFromSettings)
 
 		if err != nil {
-			dashboard.ErrorMessage = fmt.Sprintf("Something went wrong while setting username password. The error is: %s", err.Error())
+			dashboard.ErrorMessage = fmt.Sprintf("Something went wrong while setting username password for GSTIN %s login page. The error is: %s", gst.Gstin, err.Error())
 			break
 		}
 
 		data, id, err := s.extractResponseFromHttpRequest(page, "/audiocaptcha", "i.fa.fa-volume-up", "/.*/")
 
 		if err == nil && data != nil {
-			dashboard = s.setCaptchaAndLogin(page, data, id)
+			dashboard = s.setCaptchaAndLogin(page, data, id, gst.Gstin)
 
 			if dashboard.Landed {
 				break
@@ -224,14 +225,14 @@ func (s *GstScrapper) login(page *rod.Page, gst models.Gst, useCredentialFromSet
 				}
 			}
 		} else {
-			s.logger.Errorf("Something went wrong while processing captcha code. Trying again %v time", v)
+			s.logger.Errorf("Something went wrong while processing captcha code for GSTIN %s. Trying again %v time", gst.Gstin, v)
 		}
 	}
 
 	return dashboard
 }
 
-func (s *GstScrapper) setCaptchaAndLogin(page *rod.Page, audioData *proto.NetworkGetResponseBodyResult, id string) DashboardDetail {
+func (s *GstScrapper) setCaptchaAndLogin(page *rod.Page, audioData *proto.NetworkGetResponseBodyResult, id string, gstin string) DashboardDetail {
 	fileName := fmt.Sprintf("%s.mp3", id)
 	defer func(fn string) {
 		os.Remove(fn)
@@ -253,7 +254,7 @@ func (s *GstScrapper) setCaptchaAndLogin(page *rod.Page, audioData *proto.Networ
 			})
 
 			if err != nil {
-				return DashboardDetail{ErrorMessage: fmt.Sprintf("Something went wrong while setting captcha code and clicking login button. The error is: %s", err.Error())}
+				return DashboardDetail{ErrorMessage: fmt.Sprintf("Something went wrong while setting captcha code and clicking login button for GSTIN %s. The error is: %s", gstin, err.Error())}
 			}
 
 			err := rod.Try(func() {
@@ -261,41 +262,41 @@ func (s *GstScrapper) setCaptchaAndLogin(page *rod.Page, audioData *proto.Networ
 			})
 
 			if err != nil {
-				return s.checkDashboardPage(page)
+				return s.checkDashboardPage(page, gstin)
 			} else {
 				found, ele, _ := page.HasR("#adhrtableV div.modal-footer > a", "/Remind me later/")
 				if found {
 					ele.MustClick()
 
-					return s.checkDashboardPage(page)
+					return s.checkDashboardPage(page, gstin)
 				} else {
 					found, _, _ := page.HasR("#confirmDlg div.modal-footer > a", "/FILE AMENDMENT/")
 					if found {
-						return DashboardDetail{ErrorMessage: "Bank account is not linked with GSTIN"}
+						return DashboardDetail{ErrorMessage: fmt.Sprintf("Bank account is not linked with GSTIN %s", gstin)}
 					}
 				}
 
-				return DashboardDetail{ErrorMessage: "There is unknow dialog preventing the process to get gst details"}
+				return DashboardDetail{ErrorMessage: fmt.Sprintf("There is unknow dialog preventing the process to get gst details for GSTIN %s", gstin)}
 			}
 		} else {
-			s.logger.Errorf("Error while processing the Speech to text. The code is - %s", code)
+			s.logger.Errorf("Error while processing the Speech to text for GSTIN %s. The code is - %s", gstin, code)
 			return DashboardDetail{ShouldRetry: true}
 		}
 	}
 
-	s.logger.Errorf("Error while processing the Speech to text. Error - %s", err.Error())
+	s.logger.Errorf("Error while processing the Speech to text for GSTIN %s. Error - %s", gstin, err.Error())
 	return DashboardDetail{
 		ShouldRetry: true,
 	}
 }
 
-func (s *GstScrapper) checkDashboardPage(page *rod.Page) DashboardDetail {
+func (s *GstScrapper) checkDashboardPage(page *rod.Page, gstin string) DashboardDetail {
 	err := rod.Try(func() {
 		page.Timeout(time.Duration(5 * time.Second)).MustElement(".dp-widgt")
 	})
 
 	if errors.Is(err, context.DeadlineExceeded) {
-		s.logger.Errorf("Timeout while looking for dashboard widget - Reason: %s", err.Error())
+		s.logger.Errorf("Timeout while looking for dashboard widget for GSTIN %s - Reason: %s", gstin, err.Error())
 
 		err := rod.Try(func() {
 			page.Timeout(time.Duration(5 * time.Second)).MustElement("#submitpwd")
@@ -303,7 +304,7 @@ func (s *GstScrapper) checkDashboardPage(page *rod.Page) DashboardDetail {
 
 		if err == nil {
 			return DashboardDetail{
-				ErrorMessage: fmt.Sprintf("NOTIFICATION|GST credential needs to be changed for the GST user id %s", s.cfg.Server.Gst.Username),
+				ErrorMessage: fmt.Sprintf("NOTIFICATION|GST credential needs to be changed for the GSTIN %s", gstin),
 			}
 		}
 
@@ -329,14 +330,14 @@ func (s *GstScrapper) checkDashboardPage(page *rod.Page) DashboardDetail {
 
 			if strings.Contains(msg, "Invalid Username or Password. Please try again.") {
 				return DashboardDetail{
-					ErrorMessage: "NOTIFICATION|GST username or password is invalid. Please update GST credential and try again.",
+					ErrorMessage: fmt.Sprintf("NOTIFICATION|GST username or password is invalid. Please update GST credential for %s and try again.", gstin),
 				}
 			}
 		} else {
-			return DashboardDetail{ErrorMessage: fmt.Sprintf("Something went wrong while looking for dashboard widget - Reason: %s", err.Error())}
+			return DashboardDetail{ErrorMessage: fmt.Sprintf("Something went wrong while looking for dashboard widget for GSTIN %s - Reason: %s", gstin, err.Error())}
 		}
 	} else if err != nil {
-		return DashboardDetail{ErrorMessage: fmt.Sprintf("Something went wrong while looking for dashboard widget - Reason: %s", err.Error())}
+		return DashboardDetail{ErrorMessage: fmt.Sprintf("Something went wrong while looking for dashboard widget for GSTIN %s - Reason: %s", gstin, err.Error())}
 	} else {
 		s.logger.Infof("Successfully landed into dashboard widget")
 		return DashboardDetail{
@@ -344,7 +345,7 @@ func (s *GstScrapper) checkDashboardPage(page *rod.Page) DashboardDetail {
 		}
 	}
 
-	return DashboardDetail{ErrorMessage: "Something went wrong. It is neither timeout nor element not found."}
+	return DashboardDetail{ErrorMessage: fmt.Sprintf("Something went wrong while landing into dashboard for GSTIN %s. It is neither timeout nor element not found.", gstin)}
 }
 
 func (s *GstScrapper) setUsernamePassword(page *rod.Page, gst models.Gst, useCredentialFromSettings bool) error {
