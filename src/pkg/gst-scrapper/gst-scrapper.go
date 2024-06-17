@@ -59,7 +59,7 @@ func NewGstScrapper(cfg *config.Config) *GstScrapper {
 func (s *GstScrapper) ScrapGstReturnsDetail(gsts []models.Gst, useCredentialFromSettings bool) (*common.SafeChannel[GstDetail], error) {
 	quit := common.NewSafeChannel[GstDetail]()
 
-	l := launcher.New().Headless(false).Devtools(false).Leakless(false)
+	l := launcher.New().Headless(true).Devtools(false).Leakless(false)
 	browser := rod.New().ControlURL(l.MustLaunch()).MustConnect().SlowMotion(time.Second * 1).Trace(s.cfg.Server.RunMode == "debug")
 
 	go s.runGstProcesses(gsts, browser, l, useCredentialFromSettings, quit)
