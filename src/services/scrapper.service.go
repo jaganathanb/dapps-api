@@ -7,6 +7,7 @@ import (
 	"github.com/jaganathanb/dapps-api/common"
 	"github.com/jaganathanb/dapps-api/config"
 	"github.com/jaganathanb/dapps-api/data/db"
+	"github.com/jaganathanb/dapps-api/data/models"
 	gst_scrapper "github.com/jaganathanb/dapps-api/pkg/gst-scrapper"
 	"github.com/jaganathanb/dapps-api/pkg/logging"
 	"gorm.io/gorm"
@@ -38,6 +39,6 @@ func NewScrapperService(cfg *config.Config) *ScrapperService {
 	return scrapperService
 }
 
-func (s *ScrapperService) ScrapSite(gstins []string) (*common.SafeChannel[gst_scrapper.GstDetail], error) {
-	return s.scrapper.ScrapGstPortal(gstins)
+func (s *ScrapperService) ScrapGstSite(gsts []models.Gst, useCredentialFromSettings bool) (*common.SafeChannel[gst_scrapper.GstDetail], error) {
+	return s.scrapper.ScrapGstReturnsDetail(gsts, useCredentialFromSettings)
 }

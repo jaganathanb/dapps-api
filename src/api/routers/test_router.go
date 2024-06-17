@@ -9,7 +9,7 @@ import (
 func TestRouter(r *gin.RouterGroup, cfg *config.Config) {
 	h := handlers.NewTestHandler(cfg)
 
-	r.GET("/", h.Test)
+	r.POST("/", h.Test)
 	r.GET("/users", h.Users)
 	r.GET("/user/:id", h.UserById)
 	r.GET("/user/get-user-by-username/:username", h.UserByUsername)

@@ -16,7 +16,7 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/v1/test": {
-            "get": {
+            "post": {
                 "description": "Test",
                 "consumes": [
                     "application/json"
@@ -28,6 +28,20 @@ const docTemplate = `{
                     "Test"
                 ],
                 "summary": "Test",
+                "parameters": [
+                    {
+                        "description": "GstPayload gst",
+                        "name": "gsts",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/api_handlers.GstPayload"
+                            }
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -176,15 +190,6 @@ const docTemplate = `{
                     "Test"
                 ],
                 "summary": "UserById",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "user id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -1414,6 +1419,20 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "api_handlers.GstPayload": {
+            "type": "object",
+            "properties": {
+                "gstin": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "api_handlers.personData": {
             "type": "object",
             "required": [

@@ -1,13 +1,16 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"sync"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jaganathanb/dapps-api/api/dto"
+	"github.com/go-rod/rod"
 	"github.com/jaganathanb/dapps-api/api/helper"
+	"github.com/jaganathanb/dapps-api/common"
 	"github.com/jaganathanb/dapps-api/config"
-	"github.com/jaganathanb/dapps-api/constants"
+	"github.com/jaganathanb/dapps-api/data/models"
 	"github.com/jaganathanb/dapps-api/services"
 )
 
@@ -40,18 +43,87 @@ func NewTestHandler(cfg *config.Config) *TestHandler {
 	return &TestHandler{service: service, scrapper: scrapper, gstService: gstService}
 }
 
+type GstPayload struct {
+	Username string
+	Password string
+	Gstin    string
+}
+
+type GstDetail struct {
+	Gst          models.Gst
+	Returns      []models.GstStatus
+	ErrorMessage string
+}
+
 // Test godoc
 // @Summary Test
 // @Description Test
 // @Tags Test
 // @Accept  json
 // @Produce  json
+// @Param gsts body []GstPayload true "GstPayload gst"
 // @Success 200 {object} helper.BaseHttpResponse "Success"
 // @Failure 400 {object} helper.BaseHttpResponse "Failed"
-// @Router /v1/test [get]
+// @Router /v1/test [post]
 func (h *TestHandler) Test(c *gin.Context) {
-	msg, _ := h.gstService.UpdateGstStatus(&dto.UpdateGstReturnStatusRequest{Gstin: "33AARFG1079L1Z0", ReturnType: constants.GSTR1, Status: constants.InvoiceEntry})
-	c.JSON(http.StatusOK, helper.GenerateBaseResponse(msg, true, 0))
+	p := []GstPayload{}
+	err := c.ShouldBindJSON(&p)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest,
+			helper.GenerateBaseResponseWithValidationError(nil,
+				false, helper.ValidationError, err))
+		return
+	}
+
+	quit, err := h.scrapper.ScrapGstSite([]models.Gst{{Username: p[0].Username, Password: p[0].Password, Gstin: p[0].Gstin}, {Username: p[1].Username, Password: p[1].Password, Gstin: p[1].Gstin}}, false)
+
+	go func() {
+		for {
+			select {
+			case val, ok := <-quit.C:
+				if ok {
+					fmt.Println(val)
+				} else {
+					return
+				}
+			}
+		}
+	}()
+
+	c.JSON(http.StatusOK, helper.GenerateBaseResponse("Done", true, 0))
+}
+
+func getTitles(gsts []GstPayload, browser *rod.Browser, quit *common.SafeChannel[GstDetail]) {
+	pool := rod.NewBrowserPool(len(gsts))
+
+	create := func() *rod.Browser {
+		return browser.MustIncognito()
+	}
+
+	yourJob := func(q *common.SafeChannel[GstDetail]) {
+		br := pool.Get(create)
+		defer pool.Put(br)
+
+		page := br.MustPage("https://services.gst.gov.in/services/login").MustWaitLoad()
+
+		q.C <- GstDetail{
+			Gst: models.Gst{Name: page.MustInfo().Title},
+		}
+	}
+
+	wg := sync.WaitGroup{}
+	for range gsts {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			yourJob(quit)
+		}()
+	}
+	wg.Wait()
+
+	pool.Cleanup(func(p *rod.Browser) { p.MustClose() })
+
+	quit.SafeClose()
 }
 
 func (h *TestHandler) Users(c *gin.Context) {
@@ -66,7 +138,6 @@ func (h *TestHandler) Users(c *gin.Context) {
 // @Tags Test
 // @Accept  json
 // @Produce  json
-// @Param id path int true "user id"
 // @Success 200 {object} helper.BaseHttpResponse "Success"
 // @Failure 400 {object} helper.BaseHttpResponse "Failed"
 // @Router /v1/test/user/{id} [get]

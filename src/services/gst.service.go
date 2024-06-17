@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/jaganathanb/dapps-api/api/dto"
+	"github.com/jaganathanb/dapps-api/common"
 	"github.com/jaganathanb/dapps-api/config"
 	"github.com/jaganathanb/dapps-api/constants"
 	"github.com/jaganathanb/dapps-api/data/db"
@@ -100,7 +101,7 @@ func (s *GstService) CreateGsts(req *dto.CreateGstsRequest) (string, error) {
 
 	gstins := lo.Map(gsts, func(g dto.Gst, i int) string { return g.Gstin })
 
-	s.scrapGstPortal(req.CreatedBy)
+	s.scrapGstPortal(req.CreatedBy, true)
 
 	return fmt.Sprintf("%s gst details already exists. %s gst details entered into the system.", exists, gstins), err
 }
@@ -131,7 +132,7 @@ func (s *GstService) UpdateGstStatus(req *dto.UpdateGstReturnStatusRequest) (boo
 	tx.Commit()
 
 	if (req.ReturnType == constants.GSTR1 && req.Status == constants.InvoiceEntry) || (req.ReturnType == constants.GSTR3B && req.Status == constants.TaxAmountReceived) {
-		go s.scrapGstPortal(req.ModifiedBy)
+		go s.scrapGstPortal(req.ModifiedBy, false)
 	}
 
 	return true, nil
@@ -231,7 +232,7 @@ func getPendingReturnStatus(statuses []models.GstStatus, currTxp string, retType
 }
 
 func (s *GstService) RefreshGstReturns(userId int) error {
-	go s.scrapGstPortal(userId)
+	go s.scrapGstPortal(userId, false)
 
 	return nil
 }
@@ -266,10 +267,8 @@ func (s *GstService) getExistingGstsInSystem(gsts []dto.Gst) ([]string, error) {
 	return exists, nil
 }
 
-func (s *GstService) scrapGstPortal(userId int) {
+func (s *GstService) scrapGstPortal(userId int, useCredentialFromSettings bool) {
 	var gsts []models.Gst
-
-	var gstDetail = gst_scrapper.GstDetail{}
 
 	if s.base.Config.Server.Gst.BaseUrl == "" || s.base.Config.Server.Gst.Username == "" || s.base.Config.Server.Gst.Password == "" {
 		s.streamerService.StreamData(StreamMessage{Message: "GST settings are not available. Please update it from Settings page.", MessageType: constants.ERROR})
@@ -309,69 +308,9 @@ func (s *GstService) scrapGstPortal(userId int) {
 
 		s.streamerService.StreamData(StreamMessage{Message: errMsg, UserId: userId})
 
-		quit, err := s.scrapperService.ScrapSite(gstins)
+		quit, err := s.scrapperService.ScrapGstSite(lo.Filter(gsts, func(gst models.Gst, i int) bool { return lo.Contains(gstins, gst.Gstin) }), useCredentialFromSettings)
 		if err == nil {
-			go func() {
-				success := []string{}
-				failed := 0
-				for {
-					select {
-					case details, ok := <-quit.C:
-						if ok {
-							if details.ErrorMessage == "" {
-								success = append(success, details.Gst.Gstin)
-								gstDetail = details
-								s.updateGstAndReturns(gsts, gstDetail)
-
-								s.base.Logger.Infof("Got result for GSTIN %s", gstDetail.Gst.Gstin)
-							} else {
-								failed += 1
-								s.base.Logger.Errorf("Failed to fetch data for a GSTIN - %s", details.ErrorMessage)
-
-								messages := strings.Split(details.ErrorMessage, "|")
-
-								if len(messages) > 1 && messages[0] == "NOTIFICATION" {
-									errMsg = messages[1]
-									s.streamerService.StreamData(StreamMessage{Code: "NOTIFICATION", UserId: userId, MessageType: constants.ERROR, Message: errMsg})
-								}
-							}
-						} else {
-							s.base.Logger.Infof("Done with scrapping for %s GSTINs", gstins)
-							s.scrapperRunning = []string{}
-
-							count := len(gstins)
-							errMsg := ""
-
-							if len(success) == count {
-								if len(gstins) > 5 {
-									errMsg = fmt.Sprintf("GST Return status for GSTIN %s and %d+ more has been updated into the system", gstins[0], int(math.Floor(float64(count/5)*5)))
-								} else if count == 1 {
-									errMsg = fmt.Sprintf("GST Return status for GSTIN %s has been updated into the system", gstins[0])
-								} else {
-									errMsg = fmt.Sprintf("GST Return status for GSTIN %s and %d more has been updated into the system", gstins[0], count-1)
-								}
-
-								s.streamerService.StreamData(StreamMessage{Code: "NOTIFICATION", UserId: userId, MessageType: constants.SUCCESS, Message: errMsg})
-							} else if failed == count {
-								errMsg = fmt.Sprintf("Something went wrong!. Could not process any of the GSTINs submitted. Please check logs for more details.")
-
-								s.streamerService.StreamData(StreamMessage{Code: "NOTIFICATION", UserId: userId, MessageType: constants.ERROR, Message: errMsg})
-							} else {
-								if len(success) != 0 {
-									errMsg = fmt.Sprintf("Something went wrong!. Though system could able to process %d GSTINs successfully and %d GSTINs failed to process", len(success), count-len(success))
-									s.streamerService.StreamData(StreamMessage{Code: "REFRESH_GSTS_TABLE"})
-								} else {
-									errMsg = fmt.Sprintf("Something went wrong!. %d GSTINs failed to process", count)
-								}
-
-								s.streamerService.StreamData(StreamMessage{Code: "NOTIFICATION", UserId: userId, MessageType: constants.ERROR, Message: errMsg})
-							}
-
-							return
-						}
-					}
-				}
-			}()
+			go s.listenForGstReturnDetails(quit, gsts, userId, gstins)
 
 			fmt.Printf("Total records: %d", len(gsts))
 
@@ -384,6 +323,72 @@ func (s *GstService) scrapGstPortal(userId int) {
 	} else {
 		s.streamerService.StreamData(StreamMessage{Message: "Either all GSTs are up-to-date or none of the GSTs are ready to be filed"})
 		s.scrapperRunning = []string{}
+	}
+}
+
+func (s *GstService) listenForGstReturnDetails(quit *common.SafeChannel[gst_scrapper.GstDetail], gsts []models.Gst, userId int, gstins []string) bool {
+	var gstDetail = gst_scrapper.GstDetail{}
+	var errMsg string
+
+	success := []string{}
+	failed := 0
+
+	for {
+		select {
+		case details, ok := <-quit.C:
+			if ok {
+				if details.ErrorMessage == "" {
+					success = append(success, details.Gst.Gstin)
+					gstDetail = details
+					s.updateGstAndReturns(gsts, gstDetail)
+
+					s.base.Logger.Infof("Got result for GSTIN %s", gstDetail.Gst.Gstin)
+				} else {
+					failed += 1
+					s.base.Logger.Errorf("Failed to fetch data for a GSTIN - %s", details.ErrorMessage)
+
+					messages := strings.Split(details.ErrorMessage, "|")
+
+					if len(messages) > 1 && messages[0] == "NOTIFICATION" {
+						errMsg = messages[1]
+						s.streamerService.StreamData(StreamMessage{Code: "NOTIFICATION", UserId: userId, MessageType: constants.ERROR, Message: errMsg})
+					}
+				}
+			} else {
+				s.base.Logger.Infof("Done with scrapping for %s GSTINs", gstins)
+				s.scrapperRunning = []string{}
+
+				count := len(gstins)
+				errMsg := ""
+
+				if len(success) == count {
+					if len(gstins) > 5 {
+						errMsg = fmt.Sprintf("GST Return status for GSTIN %s and %d+ more has been updated into the system", gstins[0], int(math.Floor(float64(count/5)*5)))
+					} else if count == 1 {
+						errMsg = fmt.Sprintf("GST Return status for GSTIN %s has been updated into the system", gstins[0])
+					} else {
+						errMsg = fmt.Sprintf("GST Return status for GSTIN %s and %d more has been updated into the system", gstins[0], count-1)
+					}
+
+					s.streamerService.StreamData(StreamMessage{Code: "NOTIFICATION", UserId: userId, MessageType: constants.SUCCESS, Message: errMsg})
+				} else if failed == count {
+					errMsg = fmt.Sprintf("Something went wrong!. Could not process any of the GSTINs submitted. Please check logs for more details.")
+
+					s.streamerService.StreamData(StreamMessage{Code: "NOTIFICATION", UserId: userId, MessageType: constants.ERROR, Message: errMsg})
+				} else {
+					if len(success) != 0 {
+						errMsg = fmt.Sprintf("Something went wrong!. Though system could able to process %d GSTINs successfully and %d GSTINs failed to process", len(success), count-len(success))
+						s.streamerService.StreamData(StreamMessage{Code: "REFRESH_GSTS_TABLE"})
+					} else {
+						errMsg = fmt.Sprintf("Something went wrong!. %d GSTINs failed to process", count)
+					}
+
+					s.streamerService.StreamData(StreamMessage{Code: "NOTIFICATION", UserId: userId, MessageType: constants.ERROR, Message: errMsg})
+				}
+
+				return true
+			}
+		}
 	}
 }
 

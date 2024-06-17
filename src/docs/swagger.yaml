@@ -1,4 +1,13 @@
 definitions:
+  api_handlers.GstPayload:
+    properties:
+      gstin:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
   api_handlers.personData:
     properties:
       first_name:
@@ -1256,10 +1265,19 @@ paths:
       tags:
       - Stream
   /v1/test:
-    get:
+    post:
       consumes:
       - application/json
       description: Test
+      parameters:
+      - description: GstPayload gst
+        in: body
+        name: gsts
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/api_handlers.GstPayload'
+          type: array
       produces:
       - application/json
       responses:
@@ -1349,12 +1367,6 @@ paths:
       consumes:
       - application/json
       description: UserById
-      parameters:
-      - description: user id
-        in: path
-        name: id
-        required: true
-        type: integer
       produces:
       - application/json
       responses:

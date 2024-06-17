@@ -34,6 +34,13 @@ type Gst struct {
 	Email            string                            `json:"email"`
 	GstStatuses      []GstStatus                       `gorm:"foreignKey:Gstin;references:Gstin"`
 	Pradr            PermenantAddress                  `gorm:"foreignKey:Gstin;references:Gstin"`
+	Contacted        MobEmail                          `gorm:"foreignKey:Gstin;references:Gstin"`
+}
+
+type MobEmail struct {
+	Gstin  string `json:"gstin"`
+	MobNum int64  `json:"mobNum"`
+	Email  string `json:"email"`
 }
 
 type AdditionalAddress struct {
